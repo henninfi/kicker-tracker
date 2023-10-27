@@ -86,7 +86,7 @@ export default function Page() {
             backgroundColor={tab === "players" ? "bg-slate-600" : undefined}
             onClick={() => setTab("players")}
           >
-            leaderboard
+            leaderboard & Settings
           </Button>
         </div>
         <DataContext.Provider
@@ -118,7 +118,7 @@ export default function Page() {
                     onClick={() => setIsAddingGame(true)}
                     className="basis-1/2 text-center cursor-pointer"
                   >
-                    Register game⚽
+                    Register game ⚽
                   </Card>
                 </div>
               )}
@@ -137,7 +137,7 @@ export default function Page() {
                     className="basis-1/2 mr-4 text-center cursor-pointer"
                     onClick={() => setIsAddingPlayer(true)}
                   >
-                    Users 👤
+                    Register user 👤
                   </Card>
                   <Card
                     onClick={() => setIsShowingGraph(true)}
