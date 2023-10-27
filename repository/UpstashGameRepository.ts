@@ -27,10 +27,13 @@ export class UpstashGameRepository {
 
   public async listAll() {
     const gameIds = await lrange(GAME_LIST_KEY, 0, -1);
+    if (!gameIds.length) return [];  // Return an empty array if there are no player IDs
     const keys = gameIds.map(this.getGameKey);
 
     return await mget<Game[]>(keys[0], ...keys.slice(1));
   }
+
+
 
   private getGameKey(gameId: GameId) {
     return `GAME#${gameId}`;
