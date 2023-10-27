@@ -30,11 +30,13 @@ export class UpstashPlayerRepository {
   }
 
   public async listAll() {
-    const playerIds = await lrange(PLAYER_LIST_KEY, 0, -1);
-    const keys = playerIds.map(this.getPlayerKey);
+  const playerIds = await lrange(PLAYER_LIST_KEY, 0, -1);
+  if (!playerIds.length) return [];  // Return an empty array if there are no player IDs
 
-    return await mget<Player[]>(keys[0], ...keys.slice(1));
+  const keys = playerIds.map(this.getPlayerKey);
+  return await mget<Player[]>(keys[0], ...keys.slice(1));
   }
+
 
   private getPlayerKey(playerId: PlayerId) {
     return `PLAYER#${playerId}`;
