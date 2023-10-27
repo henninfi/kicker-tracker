@@ -112,7 +112,7 @@ export default function Page() {
                     className="basis-1/2 mr-4 text-center cursor-pointer"
                     onClick={() => setIsAddingTournament(true)}
                   >
-                    Tournement 🏆
+                    Create tournement 🏆
                   </Card>
                   <Card
                     onClick={() => setIsAddingGame(true)}
