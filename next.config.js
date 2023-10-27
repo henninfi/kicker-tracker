@@ -6,7 +6,7 @@ module.exports = {
     return [
       {
         source: "/",
-        destination: "https://kicker-claimsforce.vercel.app/",
+        destination: "https://table-tennis-three.vercel.app/",
         permanent: true,
       },
     ];
