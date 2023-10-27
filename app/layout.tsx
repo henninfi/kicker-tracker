@@ -14,7 +14,7 @@ export default function RootLayout({
     <html lang="en" className={rubik.className}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Table Tennis - Vestfold & Kongsberg </title>
+        <title>PingPong - Vestfold & Kongsberg </title>
       </head>
       <body>{children}</body>
     </html>
