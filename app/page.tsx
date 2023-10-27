@@ -112,13 +112,13 @@ export default function Page() {
                     className="basis-1/2 mr-4 text-center cursor-pointer"
                     onClick={() => setIsAddingTournament(true)}
                   >
-                    🏆
+                    Tournement 🏆
                   </Card>
                   <Card
                     onClick={() => setIsAddingGame(true)}
                     className="basis-1/2 text-center cursor-pointer"
                   >
-                    ⚽
+                    Register game⚽
                   </Card>
                 </div>
               )}
@@ -137,13 +137,13 @@ export default function Page() {
                     className="basis-1/2 mr-4 text-center cursor-pointer"
                     onClick={() => setIsAddingPlayer(true)}
                   >
-                    👤
+                    Users 👤
                   </Card>
                   <Card
                     onClick={() => setIsShowingGraph(true)}
                     className="basis-1/2 text-center cursor-pointer"
                   >
-                    📊
+                    Stats 📊
                   </Card>
                 </div>
               )}
