@@ -24,7 +24,9 @@ function GameList() {
   const eventsByDay = leaderboard.events
     .sort((a, b) => b.createdAt - a.createdAt)
     .reduce<Record<string, LeaderboardEvent[]>>((events, event) => {
-      const day = format(event.createdAt, "eeee, MMM do");
+      console.log(event.createdAt); // Add this line
+      const dateObject = new Date(event.createdAt);
+      const day = format(dateObject, "eeee, MMM do");
       return { ...events, [day]: [...(events[day] || []), event] };
     }, {});
 

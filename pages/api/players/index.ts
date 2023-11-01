@@ -1,23 +1,45 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import fetch from "node-fetch";
 
-import { UpstashPlayerRepository } from "../../../repository/UpstashPlayerRepository";
+const FASTAPI_BASE_URL = "http://127.0.0.1:8000";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const repository = new UpstashPlayerRepository();
+  // Handle POST request
   if (req.method === "POST") {
     const { name, animal } = req.body;
 
-    await repository.create(name, animal);
+    const response = await fetch(`${FASTAPI_BASE_URL}/players/`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, animal })
+    });
 
-    res.status(201).json({ success: true });
+    if (response.ok) {
+      res.status(201).json({ success: true });
+      return;
+    }
+    res.status(500).json({ success: false, error: "Failed to create the player." });
+    return;
   }
+
+  // Handle GET request
   if (req.method === "GET") {
-    const players = await repository.listAll();
+    const response = await fetch(`${FASTAPI_BASE_URL}/players/`);
 
-    res.status(200).json(players);
+    if (response.ok) {
+      const players = await response.json();
+      res.status(200).json(players);
+      return;
+    }
+    res.status(500).json({ success: false, error: "Failed to fetch players." });
+    return;
   }
-  res.status(500);
+
+  // Handle other methods
+  res.status(405).json({ success: false, error: "Method not allowed." });
 }

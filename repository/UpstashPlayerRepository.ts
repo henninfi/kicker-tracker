@@ -1,44 +1,30 @@
-import { Redis } from "@upstash/redis";
-import { v4 as uuid } from "uuid";
 
 import { Player, PlayerAnimal, PlayerId } from "../domain/Player";
+// playersAPI.js or another name of your choosing
+import axios from "axios";
 
-const { set, mget, del, rpush, lrem, lrange } = Redis.fromEnv();
+const BASE_URL = "http://127.0.0.1:8000";
 
-const PLAYER_LIST_KEY = "players";
+// Create a new player
+export async function createPlayer(name:String, animal:string, isRetired = false) {
+    const response = await axios.post(`${BASE_URL}/players/`, { name, animal, isRetired });
+    return response.data;
+}
 
-export class UpstashPlayerRepository {
-  public async create(name: string, animal: PlayerAnimal) {
-    const player: Player = {
-      id: uuid(),
-      name,
-      animal,
-      isRetired: false,
-    };
+// Update an existing player
+export async function updatePlayer(playerId:PlayerId, name:String, animal:String, isRetired:Boolean) {
+    const response = await axios.put(`${BASE_URL}/players/${playerId}`, { name, animal, isRetired });
+    return response.data;
+}
 
-    await set(this.getPlayerKey(player.id), JSON.stringify(player));
-    await rpush(PLAYER_LIST_KEY, player.id);
-  }
+// Delete a player by ID
+export async function deletePlayer(playerId:PlayerId) {
+    const response = await axios.delete(`${BASE_URL}/players/${playerId}`);
+    return response.data;
+}
 
-  public async update(player: Player) {
-    await set(this.getPlayerKey(player.id), JSON.stringify(player));
-  }
-
-  public async delete(playerId: PlayerId) {
-    await del(this.getPlayerKey(playerId));
-    await lrem(PLAYER_LIST_KEY, 0, playerId);
-  }
-
-  public async listAll() {
-  const playerIds = await lrange(PLAYER_LIST_KEY, 0, -1);
-  if (!playerIds.length) return [];  // Return an empty array if there are no player IDs
-
-  const keys = playerIds.map(this.getPlayerKey);
-  return await mget<Player[]>(keys[0], ...keys.slice(1));
-  }
-
-
-  private getPlayerKey(playerId: PlayerId) {
-    return `PLAYER#${playerId}`;
-  }
+// List all players
+export async function listAllPlayers() {
+    const response = await axios.get(`${BASE_URL}/players/`);
+    return response.data;
 }

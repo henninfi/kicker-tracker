@@ -1,53 +1,25 @@
-import { Redis } from "@upstash/redis";
-import { v4 as uuid } from "uuid";
 import { PlayerId } from "../domain/Player";
-
 import { Tournament, TournamentTeam, TournamentId } from "../domain/Tournament";
 
-const { set, del, mget, rpush, lrem, lrange } = Redis.fromEnv();
+  // tournamentsAPI.js
+import axios from "axios";
 
-const TOURNAMENT_LIST_KEY = "tournaments";
+const BASE_URL = "http://127.0.0.1:8000";
 
-export class UpstashTournamentRepository {
-  public async create(
-    wagerPercentage: number,
-    players: PlayerId[],
-    first: TournamentTeam,
-    second: TournamentTeam,
-    third: TournamentTeam
-  ) {
-    const tournament: Tournament = {
-      id: uuid(),
-      createdAt: Date.now(),
-      wagerPercentage,
-      players,
-      first,
-      second,
-      third,
-    };
+// Create a new tournament
+export async function createTournament(wagerPercentage:number, players:PlayerId[], first:TournamentTeam, second:TournamentTeam, third:TournamentTeam) {
+    const response = await axios.post(`${BASE_URL}/tournaments/`, { wagerPercentage, players, first, second, third });
+    return response.data;
+}
 
-    await set(this.getTournamentKey(tournament.id), JSON.stringify(tournament));
-    await rpush(TOURNAMENT_LIST_KEY, tournament.id);
-  }
+// Delete a tournament by ID
+export async function deleteTournament(tournamentId:TournamentId) {
+    const response = await axios.delete(`${BASE_URL}/tournaments/${tournamentId}`);
+    return response.data;
+}
 
-  public async delete(tournamentId: TournamentId) {
-    await del(this.getTournamentKey(tournamentId));
-    await lrem(TOURNAMENT_LIST_KEY, 0, tournamentId);
-  }
-
-  public async listAll() {
-    const tournamentIds = await lrange(TOURNAMENT_LIST_KEY, 0, -1);
-
-    if (tournamentIds.length === 0) {
-      return [];
-    }
-
-    const keys = tournamentIds.map(this.getTournamentKey);
-
-    return await mget<Tournament[]>(keys[0], ...keys.slice(1));
-  }
-
-  private getTournamentKey(tournamentId: TournamentId) {
-    return `TOURNAMENT#${tournamentId}`;
-  }
+// List all tournaments
+export async function listAllTournaments() {
+    const response = await axios.get(`${BASE_URL}/tournaments/`);
+    return response.data;
 }

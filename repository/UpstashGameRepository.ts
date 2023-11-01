@@ -1,41 +1,20 @@
-import { Redis } from "@upstash/redis";
-import { v4 as uuid } from "uuid";
-
 import { Game, GameId, Team } from "../domain/Game";
 
-const { set, del, mget, rpush, lrem, lrange } = Redis.fromEnv();
+import axios from "axios";
 
-const GAME_LIST_KEY = "games";
+const BASE_URL = "http://127.0.0.1:8000";
 
-export class UpstashGameRepository {
-  public async create(winnerTeam: Team, loserTeam: Team) {
-    const game: Game = {
-      id: uuid(),
-      createdAt: Date.now(),
-      winnerTeam,
-      loserTeam,
-    };
+export async function createGame(winnerTeam:Team, loserTeam:Team) {
+    const response = await axios.post(`${BASE_URL}/games/`, { winnerTeam, loserTeam });
+    return response.data;
+}
 
-    await set(this.getGameKey(game.id), JSON.stringify(game));
-    await rpush(GAME_LIST_KEY, game.id);
-  }
+export async function deleteGame(gameId:GameId) {
+    const response = await axios.delete(`${BASE_URL}/games/${gameId}`);
+    return response.data;
+}
 
-  public async delete(gameId: GameId) {
-    await del(this.getGameKey(gameId));
-    await lrem(GAME_LIST_KEY, 0, gameId);
-  }
-
-  public async listAll() {
-    const gameIds = await lrange(GAME_LIST_KEY, 0, -1);
-    if (!gameIds.length) return [];  // Return an empty array if there are no player IDs
-    const keys = gameIds.map(this.getGameKey);
-
-    return await mget<Game[]>(keys[0], ...keys.slice(1));
-  }
-
-
-
-  private getGameKey(gameId: GameId) {
-    return `GAME#${gameId}`;
-  }
+export async function listAllGames() {
+    const response = await axios.get(`${BASE_URL}/games/`);
+    return response.data;
 }
