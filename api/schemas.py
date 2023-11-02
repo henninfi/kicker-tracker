@@ -1,17 +1,20 @@
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, constr, validator
+from typing import List, Union
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID 
 
 
 # Pydantic models
 
 #Games
 class GameBase(BaseModel):
-    winnerTeam: str
-    loserTeam: str
+    winnerTeam: List[Optional[str]]
+    loserTeam: List[Optional[str]]
+
+    class Config:
+        orm_mode = True
 
 class GameCreate(GameBase):
     pass
@@ -20,8 +23,6 @@ class GameOut(GameCreate):
     id: UUID
     createdAt: datetime
 
-    class Config:
-        orm_mode = True
 
 # Player
 class PlayerBase(BaseModel):

@@ -31,9 +31,9 @@ export default async function handler(
   // Handle GET request
   if (req.method === "GET") {
     const response = await fetch(`${FASTAPI_BASE_URL}/games/`);
-
     if (response.ok) {
       const games = await response.json();
+      console.log(games)
       res.status(200).json(games);
       return;
     }

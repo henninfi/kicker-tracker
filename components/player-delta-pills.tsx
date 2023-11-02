@@ -15,16 +15,20 @@ export const PlayerDeltaPills = ({
 
   events.forEach((event) => {
     if (Leaderboard.isGame(event)) {
-      event.winnerTeam.forEach((player) => {
-        if (player) {
-          players[player] = (players[player] || 0) + event.delta;
-        }
-      });
-      event.loserTeam.forEach((player) => {
-        if (player) {
-          players[player] = (players[player] || 0) - event.delta;
-        }
-      });
+      if (Array.isArray(event.winnerTeam)) {
+        event.winnerTeam.forEach((player) => {
+          if (player) {
+            players[player] = (players[player] || 0) + event.delta;
+          }
+        });
+      }
+      if (Array.isArray(event.loserTeam)) {
+        event.loserTeam.forEach((player) => {
+          if (player) {
+            players[player] = (players[player] || 0) - event.delta;
+          }
+        });
+      }
     } else {
       event.players.forEach((player) => {
         if (player) {

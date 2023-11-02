@@ -193,30 +193,46 @@ const Skeleton = () => (
 
 const Team = ({ team, isBold = true }: { team: Team; isBold?: boolean }) => {
   const { getPlayer } = useContext(DataContext);
+  console.log('team: ', team)
 
-  const [player1, player2] = team.map(getPlayer);
+
+  // Ensure 'team' is an array before calling '.map()'
+  const teamArray = JSON.parse(team);
+
+  console.log('teamArray: ', teamArray)
+  console.log('team type:', typeof team); // This will output 'object' if team is an array or a plain object
+  console.log('team is array:', Array.isArray(team)); // This will output true if team is an array
+
+
+  // Now you can safely use '.map()' on 'teamArray'
+  const [player1, player2] = teamArray.map(getPlayer);
+
+    // Then, before accessing 'player1.animal', check if 'player1' is defined and has the property
+  const player1Animal = player1 && player1.animal ? player1.animal : 'dog';
+  const player2Animal = player2 && player2.animal ? player2.animal : 'cat';
+
 
   return (
     <>
       <div className="h-6 w-12 flex justify-center">
         <Image
-          src={`/animals/${player1.animal}.png`}
-          alt={player1.animal}
+          src={`/animals/${player1Animal}.png`}
+          alt={player1Animal}
           width={24}
           height={24}
         />
-        {player2.id !== "placeholder" && (
+        {player2?.id !== "placeholder" && (
           <Image
-            src={`/animals/${player2.animal}.png`}
-            alt={player2.animal}
+            src={`/animals/${player2Animal}.png`}
+            alt={player2Animal}
             width={24}
             height={24}
           />
         )}
       </div>
       <p className={`${isBold ? "font-bold" : ""} ml-2`}>
-        {player1.name}
-        {player2.name ? `, ${player2.name}` : ""}
+        {player1?.name}
+        {player2?.name ? `, ${player2.name}` : ""}
       </p>
     </>
   );
