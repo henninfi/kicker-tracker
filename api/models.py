@@ -24,7 +24,6 @@ class Player(Base):
     name = Column(String, index=True)
     animal = Column(String, index=True)
     isRetired = Column(Boolean, default=False)
-    rating = Column(Float)
 
 class Tournament(Base):
     __tablename__ = 'tournaments'

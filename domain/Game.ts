@@ -2,11 +2,10 @@ import { PlayerId } from "./Player";
 
 export type Team = [PlayerId, PlayerId | undefined];
 export type GameId = string;
-type Timestamp = number;
 
 export interface Game {
   id: GameId;
-  createdAt: Timestamp;
+  createdAt: Date;
   winnerTeam: Team;
   loserTeam: Team;
 }

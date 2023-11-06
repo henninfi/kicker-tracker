@@ -9,7 +9,7 @@ export default async function handler(
 ) {
   // Handle POST request (Update player)
   if (req.method === "POST") {
-    const { name, animal, isRetired } = req.body;
+    const { name, animal, isRetired, ranking } = req.body;
     const { id } = req.query as { id: string };
 
     const response = await fetch(`${FASTAPI_BASE_URL}/players/${id}`, {

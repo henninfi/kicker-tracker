@@ -63,7 +63,7 @@ function PlayerGraph({ onClose }: { onClose: () => void }) {
   const rankedPlayers = _rankedPlayers.sort(
     (a, b) => +a.isRetired - +b.isRetired
   );
-
+  console.log("history", history)
   const [showing, setShowing] = useState(
     rankedPlayers.filter((el) => !el.isRetired).map((el) => el.id)
   );

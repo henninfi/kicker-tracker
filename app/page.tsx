@@ -12,7 +12,7 @@ import PlayerGraph from "../components/player-graph";
 import PlayerList from "../components/player-list";
 import TournamentForm from "../components/tournament-form";
 import { DataContext } from "../data";
-import { Game } from "../domain/Game";
+import { Game, Team } from "../domain/Game";
 import { Leaderboard } from "../domain/Leaderboard";
 import { Player, PlayerId } from "../domain/Player";
 import { Tournament } from "../domain/Tournament";
@@ -45,10 +45,22 @@ export default function Page() {
         axios.get<Tournament[]>("/api/tournaments"),
       ]);
 
+     // When mapping over the games received from the API
+    const gamesParsed: Game[] = games.map(game => ({
+      ...game,
+      winnerTeam: JSON.parse(game.winnerTeam as any) ,
+      loserTeam: JSON.parse(game.loserTeam as any),
+      createdAt: new Date(game.createdAt)
+    }));
+
+    
+
     setIsLoading(false);
     setPlayers(players);
-    setGames(games);
+    setGames(gamesParsed);
     setTournaments(tournaments);
+
+    console.log("games", gamesParsed)
   }
 
   function getPlayer(id: PlayerId | undefined) {
@@ -69,7 +81,7 @@ export default function Page() {
         })),
     [leaderboard]
   );
-
+  console.log("history at page.tsx", history)      
   return (
     <div className="bg-slate-800 px-5 pb-5 text-slate-200 min-h-screen">
       <div className="w-full max-w-3xl m-auto">

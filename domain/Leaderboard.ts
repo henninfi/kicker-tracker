@@ -25,6 +25,8 @@ export class Leaderboard {
   ) {}
 
   getRankedPlayers(date = new Date()): RatedPlayer[] {
+    console.log("date", date, "type of date:", typeof date);
+
     let ratedPlayers: RatedPlayer[] = this.players.map((player) => ({
       ...player,
       isTournamentWinner: false,
@@ -32,9 +34,20 @@ export class Leaderboard {
     }));
 
     [...this.games, ...this.tournaments]
-      .filter((game) => game.createdAt < +date)
-      .sort((a, b) => a.createdAt - b.createdAt)
+      .filter((gameOrTournament) => {
+        // Convert the ISO string to a Date object for comparison
+        const createdAt = new Date(gameOrTournament.createdAt);
+        return createdAt < date;
+      })
+      .sort((a, b) => {
+        // Convert the ISO strings to Date objects and then to timestamps for sorting
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      })
       .forEach((gameOrTournament) => {
+        // Convert the ISO string to a Date object
+        const createdAt = new Date(gameOrTournament.createdAt);
+        console.log("game.createdAt", createdAt, "type of date:", typeof createdAt);
+        console.log("date", date, "type of date:", typeof date);
         if (Leaderboard.isGame(gameOrTournament)) {
           ratedPlayers = Leaderboard.applyGame(gameOrTournament, ratedPlayers);
         } else {
@@ -45,6 +58,8 @@ export class Leaderboard {
         }
       });
 
+    console.log("Finished getRankedPlayers", ratedPlayers)
+
     return ratedPlayers.sort((a, b) => b.rating - a.rating);
   }
 
@@ -54,7 +69,7 @@ export class Leaderboard {
     );
 
     const { events } = [...this.games, ...this.tournaments]
-      .sort((a, b) => a.createdAt - b.createdAt)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .reduce<{ events: LeaderboardEvent[]; players: RatedPlayer[] }>(
         (curr, event) => {
           if (Leaderboard.isGame(event)) {

@@ -22,13 +22,13 @@ function GameList() {
   const [daysShown, setDaysShown] = useState(5);
 
   const eventsByDay = leaderboard.events
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .reduce<Record<string, LeaderboardEvent[]>>((events, event) => {
-      console.log(event.createdAt); // Add this line
-      const dateObject = new Date(event.createdAt);
-      const day = format(dateObject, "eeee, MMM do");
-      return { ...events, [day]: [...(events[day] || []), event] };
-    }, {});
+  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  .reduce<Record<string, LeaderboardEvent[]>>((events, event) => {
+    const dateObject = new Date(event.createdAt);
+    const day = format(dateObject, "eeee, MMM do");
+    return { ...events, [day]: [...(events[day] || []), event] };
+  }, {});
+
 
   if (isLoading) {
     return <Skeleton />;
@@ -197,15 +197,11 @@ const Team = ({ team, isBold = true }: { team: Team; isBold?: boolean }) => {
 
 
   // Ensure 'team' is an array before calling '.map()'
-  const teamArray = JSON.parse(team);
-
-  console.log('teamArray: ', teamArray)
-  console.log('team type:', typeof team); // This will output 'object' if team is an array or a plain object
-  console.log('team is array:', Array.isArray(team)); // This will output true if team is an array
+  // const teamArray = JSON.parse(team);
 
 
   // Now you can safely use '.map()' on 'teamArray'
-  const [player1, player2] = teamArray.map(getPlayer);
+  const [player1, player2] = team.map(getPlayer);
 
     // Then, before accessing 'player1.animal', check if 'player1' is defined and has the property
   const player1Animal = player1 && player1.animal ? player1.animal : 'dog';

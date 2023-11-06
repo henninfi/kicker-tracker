@@ -12,6 +12,7 @@ function PlayerList() {
   const { leaderboard } = useContext(DataContext);
 
   const rankedPlayers = leaderboard.getRankedPlayers();
+  console.log("rankedPlayers", rankedPlayers)
   const [activePlayers, retiredPlayers] = partition(
     rankedPlayers,
     (player) => !player.isRetired
