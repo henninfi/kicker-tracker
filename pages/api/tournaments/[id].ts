@@ -23,7 +23,8 @@ export default async function handler(
 
       // Extract error from FastAPI or use a default error
       const data = await response.json();
-      res.status(response.status).json({ success: false, error: data.detail || "Failed to delete the tournament." });
+      
+      res.status(response.status).json({ success: false || "Failed to delete the tournament." });
 
     } catch (error) {
       // Log the error for debugging purposes

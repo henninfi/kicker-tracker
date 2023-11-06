@@ -28,7 +28,7 @@ function GameForm({ onClose }: { onClose: () => void }) {
   const delta =
     isComplete &&
     Leaderboard.getGameDelta(
-      { id: "", createdAt: Date.now(), winnerTeam, loserTeam },
+      { id: "", createdAt: Date.now() as any, winnerTeam, loserTeam },
       leaderboard.getRankedPlayers()
     );
 

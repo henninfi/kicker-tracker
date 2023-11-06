@@ -30,6 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // If no known method matches, or an error occurs, return a 500 error.
     return res.status(500).json({ error: "Something went wrong." });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    // Type assertion that error is an instance of Error
+    const e = error as Error;
+    return res.status(500).json({ error: e.message });
   }
 }
