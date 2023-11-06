@@ -1,5 +1,5 @@
 {
-  "name": "kicker-tracker",
+  "name": "table-tennis-elo-app",
   "private": true,
   "scripts": {
     "dev": "next dev",
