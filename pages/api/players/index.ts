@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 
-const FASTAPI_BASE_URL = "http://127.0.0.1:8000";
+const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,7 +11,7 @@ export default async function handler(
   if (req.method === "POST") {
     const { name, animal } = req.body;
 
-    const response = await fetch(`${FASTAPI_BASE_URL}/players/`, {
+    const response = await fetch(`${NEXT_PUBLIC_API}/players/`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
@@ -29,7 +29,7 @@ export default async function handler(
 
   // Handle GET request
   if (req.method === "GET") {
-    const response = await fetch(`${FASTAPI_BASE_URL}/players/`);
+    const response = await fetch(`${NEXT_PUBLIC_API}/players/`);
 
     if (response.ok) {
       const players = await response.json();

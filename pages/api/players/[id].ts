@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 
-const FASTAPI_BASE_URL = "http://127.0.0.1:8000";
+const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,7 +12,7 @@ export default async function handler(
     const { name, animal, isRetired, ranking } = req.body;
     const { id } = req.query as { id: string };
 
-    const response = await fetch(`${FASTAPI_BASE_URL}/players/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API}/players/${id}`, {
       method: "PUT", // Assuming you're using PUT for updates in your FastAPI
       headers: {
         'Content-Type': 'application/json'
@@ -36,7 +36,7 @@ export default async function handler(
   if (req.method === "DELETE") {
     const { id } = req.query as { id: string };
 
-    const response = await fetch(`${FASTAPI_BASE_URL}/players/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API}/players/${id}`, {
       method: "DELETE",
     });
 

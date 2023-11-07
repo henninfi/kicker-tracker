@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
-const FASTAPI_BASE_URL = "http://127.0.0.1:8000";
+const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === "POST") {
       const { wagerPercentage, players, first, second, third } = req.body;
 
-      const response = await axios.post(`${FASTAPI_BASE_URL}/tournaments/`, {
+      const response = await axios.post(`${NEXT_PUBLIC_API}/tournaments/`, {
         wagerPercentage,
         players,
         first,
@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(201).json({ success: true });
       }
     } else if (req.method === "GET") {
-      const response = await axios.get(`${FASTAPI_BASE_URL}/tournaments/`);
+      const response = await axios.get(`${NEXT_PUBLIC_API}/tournaments/`);
 
       if (response.status === 200) {
         return res.status(200).json(response.data);

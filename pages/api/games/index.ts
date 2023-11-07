@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import { format } from 'date-fns';
 import { Game } from '../../../domain/Game'
 
-const FASTAPI_BASE_URL = "http://127.0.0.1:8000";
+const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,7 +13,7 @@ export default async function handler(
   if (req.method === "POST") {
     const { winnerTeam, loserTeam } = req.body;
 
-    const response = await fetch(`${FASTAPI_BASE_URL}/games/`, {
+    const response = await fetch(`${NEXT_PUBLIC_API}/games/`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ function formatDate(dateString: string) {
 
 // Handle GET request
 if (req.method === "GET") {
-  const response = await fetch(`${FASTAPI_BASE_URL}/games/`);
+  const response = await fetch(`${NEXT_PUBLIC_API}/games/`);
   if (response.ok) {
     let games = (await response.json()) as Game[];
 

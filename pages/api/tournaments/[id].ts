@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 
-const FASTAPI_BASE_URL = "http://localhost:8000";
+const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,7 +12,7 @@ export default async function handler(
     const { id } = req.query as { id: string };
 
     try {
-      const response = await fetch(`${FASTAPI_BASE_URL}/tournaments/${id}`, {
+      const response = await fetch(`${NEXT_PUBLIC_API}/tournaments/${id}`, {
         method: "DELETE",
       });
 
