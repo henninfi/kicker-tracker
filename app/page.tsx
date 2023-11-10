@@ -16,6 +16,7 @@ import { Game, Team } from "../domain/Game";
 import { Leaderboard } from "../domain/Leaderboard";
 import { Player, PlayerId } from "../domain/Player";
 import { Tournament } from "../domain/Tournament";
+import Header from "../components/header";
 
 export default function Page() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -81,8 +82,9 @@ export default function Page() {
         })),
     [leaderboard]
   );
-  console.log("history at page.tsx", history)      
+   
   return (
+    
     <div className="bg-slate-800 px-5 pb-5 text-slate-200 min-h-screen">
       <div className="w-full max-w-3xl m-auto">
         <div className="flex py-3 justify-around">
