@@ -71,9 +71,12 @@ export default function Page() {
   );
 
   return (
-    <div className="bg-slate-800 px-5 pb-5 text-slate-200 min-h-screen">
+    <div className="bg-custom-image">
+    <div className="z-10 px-5 pb-5 text-slate-200 min-h-screen">
+      
       <div className="w-full max-w-3xl m-auto">
         <div className="flex py-3 justify-around">
+        <img src="/norconsult_logo.svg" alt="Description of SVG" className="h-20 w-20" />
           <Button
             textSize="text-base"
             backgroundColor={tab === "games" ? "bg-slate-600" : undefined}
@@ -162,6 +165,7 @@ export default function Page() {
           </a>
         </div>
       </div>
+    </div>
     </div>
   );
 }
