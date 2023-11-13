@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useSession } from 'next-auth/react';
 import { format, sub } from "date-fns";
 import Image from "next/image";
 import { Fragment, useContext, useState } from "react";
@@ -66,6 +67,7 @@ function GameList() {
 }
 
 function GameItem({
+  
   game: { id, winnerTeam, loserTeam, delta },
 }: {
   game: GameWithDelta;
@@ -201,7 +203,8 @@ const Team = ({ team, isBold = true }: { team: Team; isBold?: boolean }) => {
 
 
   // Now you can safely use '.map()' on 'teamArray'
-  const [player1, player2] = team.map(getPlayer);
+  const [player1, player2] = Array.isArray(team) ? team.map(getPlayer) : [undefined, undefined];
+
 
     // Then, before accessing 'player1.animal', check if 'player1' is defined and has the property
   const player1Animal = player1 && player1.animal ? player1.animal : 'dog';

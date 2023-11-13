@@ -2,7 +2,7 @@ import { PlayerId } from "./Player";
 
 export type TournamentTeam = [PlayerId, PlayerId];
 export type TournamentId = string;
-type Timestamp = number;
+type Timestamp = Date;
 
 export interface Tournament {
   id: TournamentId;

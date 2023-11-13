@@ -2,13 +2,15 @@
 
 import { SessionProvider } from 'next-auth/react'
 import Header from '../components/header'
+import RootLayout from '../app/layout'
 
 function MyApp({ Component, pageProps }) {
   return (
     <SessionProvider session={pageProps.session}>
-      <Header />
-      <Component {...pageProps} />
-      
+        <RootLayout>
+            <Header />
+            <Component {...pageProps} />
+        </RootLayout>
     </SessionProvider>
     
   )

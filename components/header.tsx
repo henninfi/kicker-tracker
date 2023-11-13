@@ -1,6 +1,6 @@
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession, signIn, signOut } from 'next-auth/react';
 
-export default function Header () {
+export default function Header() {
   const { data: session } = useSession();
 
   const handleSignin = (e) => {
@@ -14,16 +14,17 @@ export default function Header () {
   };
 
   return (
-    <div className="header">
+    <div className="bg-slate-700 text-slate-200 py-3 px-5 flex justify-between items-center">
+      <h1 className="text-xl font-semibold">My App</h1>
       {session ? (
-        <a href="#" onClick={handleSignout} className="btn-signin">
-          <button>Sign out</button>
-        </a>
+        <button onClick={handleSignout} className="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded">
+          Sign out
+        </button>
       ) : (
-        <a href="#" onClick={handleSignin} className="btn-signin">
-          <button> Sign in</button>
-        </a>
+        <button onClick={handleSignin} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+          Sign in
+        </button>
       )}
     </div>
-  )
+  );
 }

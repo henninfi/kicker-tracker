@@ -3,6 +3,7 @@
 import axios from "axios";
 import { endOfDay } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
+import { SessionProvider } from 'next-auth/react'
 import Button from "../components/button";
 import Card from "../components/card";
 import GameForm from "../components/game-form";
@@ -84,7 +85,9 @@ export default function Page() {
   );
    
   return (
-    
+    <SessionProvider>
+
+    <Header/>
     <div className="bg-slate-800 px-5 pb-5 text-slate-200 min-h-screen">
       <div className="w-full max-w-3xl m-auto">
         <div className="flex py-3 justify-around">
@@ -177,5 +180,6 @@ export default function Page() {
         </div>
       </div>
     </div>
+    </SessionProvider>
   );
 }
