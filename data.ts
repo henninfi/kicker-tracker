@@ -13,7 +13,6 @@ export const DataContext = createContext<{
   players: Player[];
   games: Game[];
   getPlayer: (id: PlayerId | undefined) => Player;
-  refresh: VoidFunction;
   leaderboard: Leaderboard;
   history: History;
   isLoading: boolean;
@@ -23,7 +22,6 @@ export const DataContext = createContext<{
   getPlayer: () => {
     throw new Error("No player found.");
   },
-  refresh: () => {},
   leaderboard: new Leaderboard([], [], []),
   history: [],
   isLoading: true,
