@@ -2,12 +2,12 @@ import axios from "axios";
 import { partition } from "lodash";
 import Image from "next/image";
 import React, { useContext, useState } from "react";
-import { useSession } from 'next-auth/react';
 import { DataContext } from "../data";
 import { RatedPlayer } from "../domain/Leaderboard";
 import { animals } from "../domain/Player";
 import Button from "./button";
 import Card from "./card";
+import { useFiefUserinfo } from '@fief/fief/nextjs/react';
 
 function PlayerList() {
   const { leaderboard } = useContext(DataContext);
@@ -33,8 +33,8 @@ function PlayerList() {
 }
 
 function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
-  const { data: session } = useSession();
-  const { refresh, players } = useContext(DataContext);
+  const user = useFiefUserinfo();
+  const { players } = useContext(DataContext);
   const [isNameEdit, setIsNameEdit] = useState(false);
   const [isAnimalEdit, setIsAnimalEdit] = useState(false);
   const [values, setValues] = useState(player);
@@ -42,7 +42,6 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
 
   async function handleSave() {
     await axios.post(`/api/players/${player.id}`, values);
-    void refresh();
     setIsNameEdit(false);
     setIsAnimalEdit(false);
   }
@@ -56,7 +55,6 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
       ...player,
       isRetired: true,
     });
-    void refresh();
     setIsNameEdit(false);
     setIsAnimalEdit(false);
   }
@@ -66,7 +64,6 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
       ...player,
       isRetired: false,
     });
-    void refresh();
     setIsNameEdit(false);
     setIsAnimalEdit(false);
   }
@@ -77,7 +74,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
         player.isRetired ? "opacity-50" : ""
       }`}
     >
-      {isAnimalEdit && session ? (
+      {isAnimalEdit && user ? (
         <div className="flex flex-col">
           <div className="flex flex-wrap">
             <div
@@ -119,7 +116,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
               ))}
           </div>
           <div className="flex justify-around">
-            {player.isRetired && session ? (
+            {player.isRetired && user ? (
               <Button onClick={handleComeback}>come back</Button>
             ) : (
               <Button onClick={handleRetirement}>retire</Button>
@@ -130,7 +127,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
       ) : (
         <>
           <p className="mr-2 w-4 text-slate-300 text-center">{rank || "-"}</p>
-          {player.isTournamentWinner && session ? (
+          {player.isTournamentWinner && user ? (
             <div className="w-6 flex justify-center items-center flex-col relative">
               <div className="absolute text-xs -right-1 -bottom-1">🥇</div>
               <Image
@@ -150,7 +147,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
               onClick={() => setIsAnimalEdit(true)}
             />
           )}
-          {isNameEdit && session ? (
+          {isNameEdit && user ? (
             <div className="flex grow">
               <input
                 autoFocus

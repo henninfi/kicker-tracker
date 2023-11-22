@@ -1,5 +1,4 @@
 // pages/ny_versjon/index.tsx
-"use client";
 
 import axios from "axios";
 import { endOfDay } from "date-fns";
@@ -18,7 +17,7 @@ import { Game, Team } from "../../domain/Game";
 import { Leaderboard } from "../../domain/Leaderboard";
 import { Player, PlayerId } from "../../domain/Player";
 import { Tournament } from "../../domain/Tournament";
-
+import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
 
 export default function Page() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -30,6 +29,8 @@ export default function Page() {
   const [isShowingGraph, setIsShowingGraph] = useState(false);
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [isAddingTournament, setIsAddingTournament] = useState(false);
+  const isAuthenticated = useFiefIsAuthenticated(); 
+  const userinfo = useFiefUserinfo();
 
   const leaderboard = useMemo(
     () => new Leaderboard(players, games, tournaments),
@@ -121,13 +122,13 @@ export default function Page() {
                 <GameForm onClose={() => setIsAddingGame(false)} />
               ) : isAddingTournament ? (
                 <TournamentForm onClose={() => setIsAddingTournament(false)} />
-              ) : (
+              ) : isAuthenticated ? (
                 <div className="flex">
                   <Card
                     className="basis-1/2 mr-4 text-center cursor-pointer"
                     onClick={() => setIsAddingTournament(true)}
                   >
-                    Create tournement 🏆
+                    Create tournament 🏆
                   </Card>
                   <Card
                     onClick={() => setIsAddingGame(true)}
@@ -136,7 +137,8 @@ export default function Page() {
                     Register game ⚽
                   </Card>
                 </div>
-              )}
+              ) : null}
+
               <GameList />
             </>
           )}

@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useSession } from 'next-auth/react';
 import { format, sub } from "date-fns";
 import Image from "next/image";
 import { Fragment, useContext, useState } from "react";
@@ -17,10 +16,13 @@ import {
   PlayerDeltaPills,
   PlayerDeltaPillsSkeleton,
 } from "./player-delta-pills";
+import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
 
 function GameList() {
   const { leaderboard, isLoading } = useContext(DataContext);
   const [daysShown, setDaysShown] = useState(5);
+
+
 
   const eventsByDay = leaderboard.events
   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -67,6 +69,7 @@ function GameList() {
 }
 
 function GameItem({
+  
   
   game: { id, winnerTeam, loserTeam, delta },
 }: {

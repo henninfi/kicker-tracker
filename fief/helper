@@ -1,0 +1,21 @@
+docker run \
+  --name fief-server \
+  -p 8000:8000 \
+  -d \
+  -e "SECRET=oAYVw5X4WMipqjzJubfJX8wwoo0Wkz2mF1ogAHOjrRyiWLpF90psRAkYAmLsXiUI-3JnAIhM-fqo_MPIphCuwQ" \
+  -e "FIEF_CLIENT_ID=IPGjop3EJKbo3BzV4CJd8OqNCm_xBJ0zTL8yUlFA0cs" \
+  -e "FIEF_CLIENT_SECRET=QK99ffAWuEzenUIl5YwTZgEKrJD_Owif7ZKHaf0RuU8" \
+  -e "ENCRYPTION_KEY=kCuZyVOGTvQP3ddqtKhs_sGSIkoRguUlRxQHuzvoLR8=" \
+  -e "PORT=8000" \
+  -e "ROOT_DOMAIN=localhost:8000" \
+  -e "FIEF_DOMAIN=localhost:8000" \
+  -e "FIEF_MAIN_USER_EMAIL=henning.firman@gmail.com" \
+  -e "FIEF_MAIN_USER_PASSWORD=AWDfes22#" \
+  -e "CSRF_COOKIE_SECURE=False" \
+  -e "SESSION_DATA_COOKIE_SECURE=False" \
+  -e "USER_LOCALE_COOKIE_SECURE=False" \
+  -e "LOGIN_HINT_COOKIE_SECURE=False" \
+  -e "LOGIN_SESSION_COOKIE_SECURE=False" \
+  -e "REGISTRATION_SESSION_COOKIE_SECURE=False" \
+  -e "SESSION_COOKIE_SECURE=False" \
+  -e "FIEF_ADMIN_SESSION_COOKIE_SECURE=False" \
