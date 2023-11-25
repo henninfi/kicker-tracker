@@ -8,6 +8,6 @@ const rubik = Rubik({
 });
 
 export default function RootLayout({ children }) {
-  return <>{children}</>;
+  return <div className="bg-slate-600 px-5 pb-5 text-slate-200 min-h-screen">{children}</div>;
 }
 

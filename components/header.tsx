@@ -23,7 +23,13 @@ const Header: React.FunctionComponent = () => {
         {isAuthenticated && userinfo && (
           <div>
             <span>{userinfo.email} - </span>
-            <span>{userinfo.fields["temp_scope"]} - </span>
+            {userinfo.fields && (
+  <div>
+    {Object.entries(userinfo.fields).map(([key, value]) => (
+      <div key={key}>{key}: {value}</div>
+    ))}
+  </div>
+)}
             {}
             <Link href="/logout">Logout</Link>
           </div>

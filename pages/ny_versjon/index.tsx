@@ -18,8 +18,12 @@ import { Leaderboard } from "../../domain/Leaderboard";
 import { Player, PlayerId } from "../../domain/Player";
 import { Tournament } from "../../domain/Tournament";
 import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
+import { useRouter } from 'next/router';
+import SessionMenu from '../../components/SessionMenu';
 
 export default function Page() {
+  const router = useRouter();
+
   const [players, setPlayers] = useState<Player[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -31,6 +35,14 @@ export default function Page() {
   const [isAddingTournament, setIsAddingTournament] = useState(false);
   const isAuthenticated = useFiefIsAuthenticated(); 
   const userinfo = useFiefUserinfo();
+
+  useEffect(() => {
+    // Check for session type in URL and update state accordingly
+    const sessionType = router.query.sessionType;
+    if (sessionType === 'casual' || sessionType === 'ranked') {
+      // Update your state or logic based on sessionType
+    }
+  }, [router.query]);
 
   const leaderboard = useMemo(
     () => new Leaderboard(players, games, tournaments),
@@ -87,98 +99,97 @@ export default function Page() {
   );
    
   return (
-    <div className="bg-slate-800 px-5 pb-5 text-slate-200 min-h-screen">
-      <div className="w-full max-w-3xl m-auto">
-        <div className="flex py-3 justify-around">
-          <Button
-            textSize="text-base"
-            backgroundColor={tab === "games" ? "bg-slate-600" : undefined}
-            onClick={() => setTab("games")}
-          >
-            games
-          </Button>
-          <Button
-            textSize="text-base"
-            backgroundColor={tab === "players" ? "bg-slate-600" : undefined}
-            onClick={() => setTab("players")}
-          >
-            leaderboard & Settings
-          </Button>
-        </div>
-        <DataContext.Provider
-          value={{
-            players,
-            games,
-            getPlayer,
-            refresh: fetchData,
-            leaderboard,
-            history,
-            isLoading,
-          }}
+  
+    <div className="w-full max-w-3xl m-auto">
+      <div className="flex py-3 justify-around">
+        <Button
+          textSize="text-base"
+          backgroundColor={tab === "games" ? "bg-slate-600" : undefined}
+          onClick={() => setTab("games")}
         >
-          {tab === "games" && (
-            <>
-              {isAddingGame ? (
-                <GameForm onClose={() => setIsAddingGame(false)} />
-              ) : isAddingTournament ? (
-                <TournamentForm onClose={() => setIsAddingTournament(false)} />
-              ) : isAuthenticated ? (
-                <div className="flex">
-                  <Card
-                    className="basis-1/2 mr-4 text-center cursor-pointer"
-                    onClick={() => setIsAddingTournament(true)}
-                  >
-                    Create tournament 🏆
-                  </Card>
-                  <Card
-                    onClick={() => setIsAddingGame(true)}
-                    className="basis-1/2 text-center cursor-pointer"
-                  >
-                    Register game ⚽
-                  </Card>
-                </div>
-              ) : null}
+          games
+        </Button>
+        <Button
+          textSize="text-base"
+          backgroundColor={tab === "players" ? "bg-slate-600" : undefined}
+          onClick={() => setTab("players")}
+        >
+          leaderboard & Settings
+        </Button>
+      </div>
+      <DataContext.Provider
+        value={{
+          players,
+          games,
+          getPlayer,
+          leaderboard,
+          history,
+          isLoading,
+        }}
+      >
+        {tab === "games" && (
+          <>
+            {isAddingGame ? (
+              <GameForm onClose={() => setIsAddingGame(false)} />
+            ) : isAddingTournament ? (
+              <TournamentForm onClose={() => setIsAddingTournament(false)} />
+            ) : isAuthenticated ? (
+              <div className="flex">
+                <Card
+                  className="basis-1/2 mr-4 text-center cursor-pointer p-4"
+                  onClick={() => setIsAddingTournament(true)}
+                >
+                  Create tournament 🏆
+                </Card>
+                <Card
+                  onClick={() => setIsAddingGame(true)}
+                  className="basis-1/2 text-center cursor-pointer p-4"
+                >
+                  Register game ⚽
+                </Card>
+              </div>
+            ) : null}
 
-              <GameList />
-            </>
-          )}
-          {tab === "players" && (
-            <>
-              {isShowingGraph ? (
-                <PlayerGraph onClose={() => setIsShowingGraph(false)} />
-              ) : isAddingPlayer ? (
-                <PlayerForm onClose={() => setIsAddingPlayer(false)} />
-              ) : (
-                <div className="flex mb-4">
-                  <Card
-                    className="basis-1/2 mr-4 text-center cursor-pointer"
-                    onClick={() => setIsAddingPlayer(true)}
-                  >
-                    Register user 👤
-                  </Card>
-                  <Card
-                    onClick={() => setIsShowingGraph(true)}
-                    className="basis-1/2 text-center cursor-pointer"
-                  >
-                    Stats 📊
-                  </Card>
-                </div>
-              )}
-              <PlayerList />
-            </>
-          )}
-        </DataContext.Provider>
+            <GameList />
+          </>
+        )}
+        {tab === "players" && (
+          <>
+            {isShowingGraph ? (
+              <PlayerGraph onClose={() => setIsShowingGraph(false)} />
+            ) : isAddingPlayer ? (
+              <PlayerForm onClose={() => setIsAddingPlayer(false)} />
+            ) : (
+              <div className="flex mb-4">
+                <Card
+                  className="basis-1/2 mr-4 text-center cursor-pointer p-4"
+                  onClick={() => setIsAddingPlayer(true)}
+                >
+                  Register user 👤
+                </Card>
+                <Card
+                  onClick={() => setIsShowingGraph(true)}
+                  className="basis-1/2 text-center cursor-pointer p-4"
+                >
+                  Stats 📊
+                </Card>
+              </div>
+            )}
+            <PlayerList />
+          </>
+        )}
+      </DataContext.Provider>
 
-        <div className="mt-4 flex justify-center underline">
-          <a
-            href="https://github.com/JonathanWbn/kicker-tracker"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Source
-          </a>
-        </div>
+      <div className="mt-4 flex justify-center underline">
+        <a
+          href="https://github.com/JonathanWbn/kicker-tracker"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Source
+        </a>
       </div>
     </div>
+
   );
 }

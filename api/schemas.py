@@ -17,6 +17,7 @@ class GameBase(BaseModel):
         orm_mode = True
 
 class GameCreate(GameBase):
+    session_id: UUID # ID of the session to associate with
     pass
 
 class GameOut(GameCreate):
@@ -34,7 +35,7 @@ class PlayerCreate(PlayerBase):
     pass
 
 class PlayerOut(PlayerBase):
-    id: str
+    id: UUID
 
     class Config:
         orm_mode = True
@@ -53,3 +54,16 @@ class TournamentCreate(TournamentBase):
 class TournamentOut(TournamentBase):
     id: str
     createdAt: datetime
+
+# Session
+class SessionBase(BaseModel):
+    session_type: str
+    end_date: Optional[datetime] = None
+    player_ids: Optional[List[UUID]] = []
+    game_ids: Optional[List[UUID]] = []
+
+class SessionCreate(SessionBase):
+    pass
+
+class SessionOut(SessionCreate):
+    id: UUID
