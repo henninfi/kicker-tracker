@@ -17,7 +17,7 @@ function classNames(...classes: string[]) {
 }
 
 function TournamentForm({ onClose }: Props) {
-  const { refresh, leaderboard } = useContext(DataContext);
+  const { leaderboard } = useContext(DataContext);
   const [wagerPercentage, setWagerPercentage] = useState(wagerOptions[1]);
   const [players, setPlayers] = useState<PlayerId[]>([]);
   const [_firstTeam, setFirstTeam] = useState<PlayerId[]>([]);
@@ -46,7 +46,6 @@ function TournamentForm({ onClose }: Props) {
       second: secondTeam,
       third: thirdTeam,
     });
-    void refresh();
     setPlayers([]);
     setFirstTeam([]);
     setSecondTeam([]);

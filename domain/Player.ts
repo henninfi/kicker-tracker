@@ -57,6 +57,12 @@ export interface Player {
   name: string;
   animal: PlayerAnimal;
   isRetired: boolean;
+  isOptimistic: boolean
+}
+
+export interface NewPlayer {
+  name: string;
+  animal: PlayerAnimal;
 }
 
 export const animals: PlayerAnimal[] = [

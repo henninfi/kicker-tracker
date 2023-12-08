@@ -45,4 +45,6 @@ yarn-error.log*
 /tabletennis
 *.pyc
 
-helper
+helper.sh
+docker-compose.yml
+docker-compose-fief.yml

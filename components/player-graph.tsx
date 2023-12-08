@@ -63,11 +63,11 @@ function PlayerGraph({ onClose }: { onClose: () => void }) {
   const rankedPlayers = _rankedPlayers.sort(
     (a, b) => +a.isRetired - +b.isRetired
   );
-  console.log("history", history)
+
   const [showing, setShowing] = useState(
     rankedPlayers.filter((el) => !el.isRetired).map((el) => el.id)
   );
-
+  const sortedHistory = [...history].sort((a, b) => a.date - b.date);
   const datasets = rankedPlayers.map(({ name, id }, index) => ({
     id: id,
     label: name,
@@ -84,7 +84,7 @@ function PlayerGraph({ onClose }: { onClose: () => void }) {
   }));
 
   const data = {
-    labels: history.map((day) => format(day.date, "MMM d")),
+    labels: sortedHistory.map((day) => format(day.date, "MMM d")),
     datasets: datasets.filter((dataset) => showing.includes(dataset.id)),
   };
 
@@ -184,6 +184,7 @@ function PlayerGraph({ onClose }: { onClose: () => void }) {
 }
 
 function getRanking(rankings: RatedPlayer[] | undefined, playerId: string) {
+  console.log(playerId, rankings)
   return rankings?.find((ranking) => ranking.id === playerId)?.rating || 1500;
 }
 

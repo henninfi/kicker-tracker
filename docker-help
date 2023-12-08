@@ -1,0 +1,2 @@
+docker-compose -f docker-compose-fief.yml up
+docker tag kicker-tracker europe-north1-docker.pkg.dev/table-tennis-404218/rankit/kicker-tracker:latest

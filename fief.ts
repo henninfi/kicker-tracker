@@ -4,9 +4,9 @@ import { FiefAuth, IUserInfoCache } from '@fief/fief/nextjs';
 export const SESSION_COOKIE_NAME = "user_session";  
 
 export const fiefClient = new Fief({  
-  baseURL: 'https://rank-it.fief.dev',
-  clientId: '23S-mZE4dCuZTBfT3XmDB3TktP3UyI_ucchcpuR-OEU',
-  clientSecret: 'UE6fWYnWb9hilpij0zyBOWh5dZKobWwpU_spRZOD2wE',
+  baseURL: 'https://rank-it-fief-prod-feifdb.fief.dev',
+  clientId: '0w7YQcNlCiHiqljhSUrM5lKKLGwUyaG2rceXB0IElD8',
+  clientSecret: 'EdVIx28qzWzViyAGPaw9Z_peAz3u6-RgDOgkMIbJ0jY',
 });
 
 class MemoryUserInfoCache implements IUserInfoCache {  

@@ -3,17 +3,53 @@ import { uniq } from "lodash";
 import Image from "next/image";
 import { MouseEvent, useContext, useState } from "react";
 import { DataContext } from "../data";
-import { Team } from "../domain/Game";
+import { Team, Game, NewGame } from "../domain/Game";
 import { Leaderboard } from "../domain/Leaderboard";
 import { PlayerId } from "../domain/Player";
 import Button from "./button";
 import Card from "./card";
+import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
+
+  import { useRouter } from 'next/router';
+
 
 function GameForm({ onClose }: { onClose: () => void }) {
-  const { refresh, leaderboard } = useContext(DataContext);
+  const router = useRouter();
+
+  const { leaderboard } = useContext(DataContext);
   const [winnerTeam, setWinnerTeam] = useState<Team>(["", ""]);
   const [loserTeam, setLoserTeam] = useState<Team>(["", ""]);
 
+  const queryClient = useQueryClient();
+  const sessionId = router.query.sessionId as string;
+  const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
+
+  // Define the mutation for posting a new game
+  const postGameMutation = useMutation({
+    mutationFn: (newGameData: NewGame) => axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, newGameData),
+    onSuccess: () => {
+      // Correct usage of invalidateQueries with query filters
+      queryClient.invalidateQueries({ queryKey: ['games', sessionId] });
+    },
+    mutationKey: ['addGame']
+  });
+
+
+  
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!isComplete) return;
+
+    const newGame: NewGame = {
+      winnerTeam: [winner1, winner2],
+      loserTeam: [loser1, loser2],
+    };
+
+    postGameMutation.mutate(newGame);
+    onClose();
+  }
+  const { isPending, variables } = postGameMutation
   const [winner1, winner2] = winnerTeam;
   const [loser1, loser2] = loserTeam;
 
@@ -28,24 +64,27 @@ function GameForm({ onClose }: { onClose: () => void }) {
   const delta =
     isComplete &&
     Leaderboard.getGameDelta(
-      { id: "", createdAt: Date.now() as any, winnerTeam, loserTeam },
+      { id: "", createdAt: Date.now() as any, winnerTeam, loserTeam, isOptimistic: false, delta:0 },
       leaderboard.getRankedPlayers()
     );
 
-  async function handeSubmit(e: MouseEvent<HTMLButtonElement>) {
-    if (!isComplete) {
-      return;
-    }
+  // async function handleSubmit(e: MouseEvent<HTMLButtonElement>) {
+  //   if (!isComplete) {
+  //     return;
+  //   }
 
-    await axios.post("/api/games", {
-      winnerTeam: [winner1, winner2],
-      loserTeam: [loser1, loser2],
-    });
-    void refresh();
-    setLoserTeam(["", ""]);
-    setWinnerTeam(["", ""]);
-    onClose();
-  }
+  //   await axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, {
+  //     winnerTeam: [winner1, winner2],
+  //     loserTeam: [loser1, loser2],
+  //   });
+  //   setLoserTeam(["", ""]);
+  //   setWinnerTeam(["", ""]);
+  //   onClose();
+
+    
+  // }
+
+
 
   function handleWinnerSelect(playerId: PlayerId) {
     if (winnerTeam.includes(playerId)) {
@@ -150,7 +189,7 @@ function GameForm({ onClose }: { onClose: () => void }) {
         <Button
           backgroundColor="bg-green-700"
           textSize="text-base"
-          onClick={handeSubmit}
+          onClick={handleSubmit}
         >
           create
         </Button>

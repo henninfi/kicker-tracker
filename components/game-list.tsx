@@ -3,7 +3,7 @@ import { format, sub } from "date-fns";
 import Image from "next/image";
 import { Fragment, useContext, useState } from "react";
 import { DataContext } from "../data";
-import { Team } from "../domain/Game";
+import { Team, Game, NewGame } from "../domain/Game";
 import {
   GameWithDelta,
   Leaderboard,
@@ -17,14 +17,49 @@ import {
   PlayerDeltaPillsSkeleton,
 } from "./player-delta-pills";
 import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
+import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 
 function GameList() {
   const { leaderboard, isLoading } = useContext(DataContext);
   const [daysShown, setDaysShown] = useState(5);
 
 
+    // access variables somewhere else
+    const variables = useMutationState({
+      filters: { mutationKey: ['addGame'], status: 'pending' },
+      select: (mutation) => mutation.state.variables
+    })  
 
-  const eventsByDay = leaderboard.events
+
+  if (isLoading) {
+    return <Skeleton />;
+  }
+
+
+
+  // Convert mutation variables to game structure and add to the list
+  let optimisticGame = null;
+  if (variables && variables.length > 0) {
+    const [newGame] : any = variables;
+    optimisticGame = {
+      id: 'temp-id',
+      winnerTeam: newGame.winnerTeam,
+      loserTeam: newGame.loserTeam,
+      delta: 0.0, // Calculate delta if needed
+      createdAt: new Date(),
+      isOptimistic: true
+    };
+  }
+
+  const events = [...leaderboard.events];
+  if (optimisticGame) {
+    events.push(optimisticGame); // Add the optimistic game to the events list
+    console.log('events',events)
+  }
+
+
+  const eventsByDay = events
   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   .reduce<Record<string, LeaderboardEvent[]>>((events, event) => {
     const dateObject = new Date(event.createdAt);
@@ -32,13 +67,11 @@ function GameList() {
     return { ...events, [day]: [...(events[day] || []), event] };
   }, {});
 
-
-  if (isLoading) {
-    return <Skeleton />;
-  }
+  console.log('eventsByDay',eventsByDay)
+  
 
   return (
-    <>
+<>
       {Object.entries(eventsByDay)
         .slice(0, daysShown)
         .map(([day, events]) => (
@@ -68,23 +101,45 @@ function GameList() {
   );
 }
 
-function GameItem({
-  
-  
-  game: { id, winnerTeam, loserTeam, delta },
-}: {
-  game: GameWithDelta;
-}) {
-  const { refresh } = useContext(DataContext);
+function GameItem({ game }: { game: Game }) {
+  const router = useRouter();
+  const { id, winnerTeam, loserTeam, delta, isOptimistic } = game;
+  const queryClient = useQueryClient();
   const [isDeletion, setIsDeletion] = useState(false);
+  const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
+  const sessionId = router.query.sessionId as string;
 
-  async function handleDelete() {
-    await axios.delete(`/api/games/${id}`);
-    void refresh();
-  }
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${NEXT_PUBLIC_API}/games/${id}`);
+      
+      // Update the games query data
+      queryClient.setQueryData(['games'], (oldData) => {
+        // Check if oldData exists and is an array
+        if (Array.isArray(oldData)) {
+          // Remove the deleted game from the array
+          return oldData.filter((game) => game.id !== id);
+        }
+  
+        // If oldData is not as expected, return it as is
+        return oldData;
+      });
+  
+      // Optionally, refetch the games query
+      queryClient.invalidateQueries({ queryKey: ['games', sessionId] });
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      // Handle error appropriately
+    }
+  };
+
+  
+  // const parsedWinnerTeam = JSON.parse(winnerTeam);
+  // const parsedLoserTeam = JSON.parse(loserTeam);
+  
 
   return (
-    <Card className="mb-2" onClick={() => !isDeletion && setIsDeletion(true)}>
+    <Card className={`mb-2 ${game.isOptimistic ? 'opacity-50' : ''}`} onClick={() => !isDeletion && setIsDeletion(true)}>
       {isDeletion ? (
         <div className="flex justify-around">
           <Button onClick={() => setIsDeletion(false)}>cancel</Button>
@@ -111,12 +166,12 @@ function GameItem({
 }
 
 function TournamentItem({ tournament }: { tournament: TournamentWithDelta }) {
-  const { refresh } = useContext(DataContext);
+  // const { refresh } = useContext(DataContext);
   const [isDeletion, setIsDeletion] = useState(false);
 
   async function handleDelete() {
     await axios.delete(`/api/tournaments/${tournament.id}`);
-    void refresh();
+    // void refresh();
   }
 
   return (
@@ -198,7 +253,6 @@ const Skeleton = () => (
 
 const Team = ({ team, isBold = true }: { team: Team; isBold?: boolean }) => {
   const { getPlayer } = useContext(DataContext);
-  console.log('team: ', team)
 
 
   // Ensure 'team' is an array before calling '.map()'

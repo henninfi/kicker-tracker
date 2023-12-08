@@ -25,7 +25,6 @@ export class Leaderboard {
   ) {}
 
   getRankedPlayers(date = new Date()): RatedPlayer[] {
-    console.log("date", date, "type of date:", typeof date);
 
     let ratedPlayers: RatedPlayer[] = this.players.map((player) => ({
       ...player,
@@ -46,8 +45,6 @@ export class Leaderboard {
       .forEach((gameOrTournament) => {
         // Convert the ISO string to a Date object
         const createdAt = new Date(gameOrTournament.createdAt);
-        console.log("game.createdAt", createdAt, "type of date:", typeof createdAt);
-        console.log("date", date, "type of date:", typeof date);
         if (Leaderboard.isGame(gameOrTournament)) {
           ratedPlayers = Leaderboard.applyGame(gameOrTournament, ratedPlayers);
         } else {
@@ -58,7 +55,7 @@ export class Leaderboard {
         }
       });
 
-    console.log("Finished getRankedPlayers", ratedPlayers)
+
 
     return ratedPlayers.sort((a, b) => b.rating - a.rating);
   }

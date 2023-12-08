@@ -28,7 +28,7 @@ export default async function handler(
     }
     res.status(500).json({ success: false, error: "Failed to create the game." });
     return;
-  }
+  }}
 
 
 
@@ -53,27 +53,27 @@ function formatDate(dateString: string) {
   return format(date, 'EEE MMM dd yyyy HH:mm:ss \'GMT\'xxxx \'(Central European Standard Time)\'', options as any);
 }
 
-// Handle GET request
-if (req.method === "GET") {
-  const response = await fetch(`${NEXT_PUBLIC_API}/games/`);
-  if (response.ok) {
-    let games = (await response.json()) as Game[];
+// // Handle GET request
+// if (req.method === "GET") {
+//   const response = await fetch(`${NEXT_PUBLIC_API}/games/`);
+//   if (response.ok) {
+//     let games = (await response.json()) as Game[];
 
 
-    // Format the `createdAt` date for each game
-    games = games.map(game => ({
-      ...game,
-      createdAt: new Date(formatDate(game.createdAt as any))
-    }));
+//     // Format the `createdAt` date for each game
+//     games = games.map(game => ({
+//       ...game,
+//       createdAt: new Date(formatDate(game.createdAt as any))
+//     }));
 
-    res.status(200).json(games as Game[]);
-    return;
-  }
-  res.status(500).json({ success: false, error: "Failed to fetch games." });
-  return;
-}
+//     res.status(200).json(games as Game[]);
+//     return;
+//   }
+//   res.status(500).json({ success: false, error: "Failed to fetch games." });
+//   return;
+// }
 
 
-  // Handle other methods
-  res.status(405).json({ success: false, error: "Method not allowed." });
-}
+//   // Handle other methods
+//   res.status(405).json({ success: false, error: "Method not allowed." });
+// }

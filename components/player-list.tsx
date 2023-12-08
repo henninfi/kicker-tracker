@@ -8,17 +8,56 @@ import { animals } from "../domain/Player";
 import Button from "./button";
 import Card from "./card";
 import { useFiefUserinfo } from '@fief/fief/nextjs/react';
+import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
+
+const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
+
 
 function PlayerList() {
   const { leaderboard } = useContext(DataContext);
 
 
+  // Preparing for optimistic update
+  const variables = useMutationState({
+    filters: { mutationKey: ['addPlayer'], status: 'pending' },
+    select: (mutation) => mutation.state.variables
+  })
+
+   // Convert mutation variables to game structure and add to the list
+   let optimisticPlayer = null;
+   if (variables && variables.length > 0) {
+     const [newPlayer]:any = variables;
+     optimisticPlayer = {
+       id: 'temp-id',
+       name: newPlayer.name,
+       animal: newPlayer.animal,
+       isRetired: false,
+       isOptimistic: true,
+       rating: 1500.0,
+       isTournamentWinner: false
+     };
+   }
+
   const rankedPlayers = leaderboard.getRankedPlayers();
+
+  
+
+ 
+
+  
   // console.log("rankedPlayers", rankedPlayers)
   const [activePlayers, retiredPlayers] = partition(
     rankedPlayers,
     (player) => !player.isRetired
   );
+
+  if (optimisticPlayer) {
+    activePlayers.push(optimisticPlayer); // Add the optimistic game to the events list
+    activePlayers.sort((a, b) => a.rating - b.rating);
+
+  }
+
 
   return (
     <Card>
@@ -33,17 +72,21 @@ function PlayerList() {
 }
 
 function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
+  const router = useRouter();
   const user = useFiefUserinfo();
   const { players } = useContext(DataContext);
   const [isNameEdit, setIsNameEdit] = useState(false);
   const [isAnimalEdit, setIsAnimalEdit] = useState(false);
   const [values, setValues] = useState(player);
+  const sessionId = router.query.sessionId as string;
+  const queryClient = useQueryClient();
   
 
   async function handleSave() {
-    await axios.post(`/api/players/${player.id}`, values);
+    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, values);
     setIsNameEdit(false);
     setIsAnimalEdit(false);
+    queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   async function handleRetirement() {
@@ -51,21 +94,24 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
     if (!confirmed) {
       return;
     }
-    await axios.post(`/api/players/${player.id}`, {
+    console.log('player', player)
+    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, {
       ...player,
       isRetired: true,
     });
     setIsNameEdit(false);
     setIsAnimalEdit(false);
+    queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   async function handleComeback() {
-    await axios.post(`/api/players/${player.id}`, {
+    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, {
       ...player,
       isRetired: false,
     });
     setIsNameEdit(false);
     setIsAnimalEdit(false);
+    queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   return (

@@ -20,6 +20,13 @@ import { Tournament } from "../../domain/Tournament";
 import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
 import { useRouter } from 'next/router';
 import SessionMenu from '../../components/SessionMenu';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 
 export default function Page() {
   const router = useRouter();
@@ -35,6 +42,32 @@ export default function Page() {
   const [isAddingTournament, setIsAddingTournament] = useState(false);
   const isAuthenticated = useFiefIsAuthenticated(); 
   const userinfo = useFiefUserinfo();
+  const sessionId = router.query.sessionId as string;
+  const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
+  
+  const gamesQuery = useQuery({
+    queryKey: ['games', sessionId],
+    queryFn: () => axios.get(`${NEXT_PUBLIC_API}/games/${sessionId}`).then(res => res.data),
+    select: (data: any[]) => data.map((game: any) => ({
+      ...game,
+      winnerTeam: JSON.parse(game.winnerTeam),
+      loserTeam: JSON.parse(game.loserTeam),
+      createdAt: new Date(game.createdAt)
+    })),
+    enabled: !!sessionId,
+  });
+  
+
+  const playersQuery = useQuery({
+    queryKey: ['players', sessionId],
+    queryFn: () => axios.get(`${NEXT_PUBLIC_API}/players/${sessionId}`).then(res => res.data),
+    enabled: !!sessionId,
+  });
+
+  const tournamentsQuery = useQuery({
+    queryKey: ['tournaments'],
+    queryFn: () => axios.get(`${NEXT_PUBLIC_API}/tournaments`).then(res => res.data)
+  });
 
   useEffect(() => {
     // Check for session type in URL and update state accordingly
@@ -44,62 +77,46 @@ export default function Page() {
     }
   }, [router.query]);
 
-  const leaderboard = useMemo(
-    () => new Leaderboard(players, games, tournaments),
-    [players, games, tournaments]
-  );
+  // Define a default leaderboard object that matches the Leaderboard type
+const defaultLeaderboard = new Leaderboard([], [], []);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+const leaderboard = useMemo(() => {
+  if (!gamesQuery.data || !playersQuery.data || !tournamentsQuery.data) return defaultLeaderboard;
+  return new Leaderboard(playersQuery.data, gamesQuery.data, tournamentsQuery.data);
+}, [playersQuery.data, gamesQuery.data, tournamentsQuery.data]);
 
-  async function fetchData() {
-    const [{ data: players }, { data: games }, { data: tournaments }] =
-      await Promise.all([
-        axios.get<Player[]>("/api/players"),
-        axios.get<Game[]>("/api/games"),
-        axios.get<Tournament[]>("/api/tournaments"),
-      ]);
-
-     // When mapping over the games received from the API
-    const gamesParsed: Game[] = games.map(game => ({
-      ...game,
-      winnerTeam: JSON.parse(game.winnerTeam as any) ,
-      loserTeam: JSON.parse(game.loserTeam as any),
-      createdAt: new Date(game.createdAt)
-    }));
-
-    
-
-    setIsLoading(false);
-    setPlayers(players);
-    setGames(gamesParsed);
-    setTournaments(tournaments);
-
-    console.log("games", gamesParsed)
-  }
 
   function getPlayer(id: PlayerId | undefined) {
-    const player = players?.find((el) => el.id === id);
+    const player = playersQuery.data?.find((el: Player) => el.id === id);
     return (
       player || { id: "placeholder", name: "", animal: "bat", isRetired: false }
     );
   }
+  
 
-  const history = useMemo(
-    () =>
-      leaderboard.events
-        .map((event) => endOfDay(event.createdAt).getTime())
-        .filter((date, index, array) => array.indexOf(date) === index)
-        .map((date) => ({
-          date,
-          rankings: leaderboard.getRankedPlayers(new Date(date)),
-        })),
-    [leaderboard]
-  );
+  const history = useMemo(() => {
+    // Ensure that leaderboard is defined and has the 'events' property
+    if (!leaderboard || !leaderboard.events) {
+      return [];
+    }
+  
+    return leaderboard.events
+      .map((event) => endOfDay(event.createdAt).getTime())
+      .filter((date, index, array) => array.indexOf(date) === index)
+      .map((date) => ({
+        date,
+        rankings: leaderboard.getRankedPlayers(new Date(date)),
+      }));
+  }, [leaderboard]);
+  
    
   return (
-  
+    <div className="w-full max-w-3xl m-auto">
+    {gamesQuery.isLoading || playersQuery.isLoading || tournamentsQuery.isLoading ? (
+      <div>Loading...</div>
+    ) : gamesQuery.error || playersQuery.error || tournamentsQuery.error ? (
+      <div>Error fetching data</div>
+    ) : (
     <div className="w-full max-w-3xl m-auto">
       <div className="flex py-3 justify-around">
         <Button
@@ -119,12 +136,12 @@ export default function Page() {
       </div>
       <DataContext.Provider
         value={{
-          players,
-          games,
+          players: playersQuery.data || [],
+          games: gamesQuery.data || [],
           getPlayer,
           leaderboard,
           history,
-          isLoading,
+          isLoading: gamesQuery.isLoading || playersQuery.isLoading || tournamentsQuery.isLoading,
         }}
       >
         {tab === "games" && (
@@ -133,17 +150,17 @@ export default function Page() {
               <GameForm onClose={() => setIsAddingGame(false)} />
             ) : isAddingTournament ? (
               <TournamentForm onClose={() => setIsAddingTournament(false)} />
-            ) : isAuthenticated ? (
+            ) : !isAuthenticated ? (
               <div className="flex">
-                <Card
+                {/* <Card
                   className="basis-1/2 mr-4 text-center cursor-pointer p-4"
                   onClick={() => setIsAddingTournament(true)}
                 >
                   Create tournament 🏆
-                </Card>
+                </Card> */}
                 <Card
                   onClick={() => setIsAddingGame(true)}
-                  className="basis-1/2 text-center cursor-pointer p-4"
+                  className="w-full text-center cursor-pointer p-4"
                 >
                   Register game ⚽
                 </Card>
@@ -191,5 +208,7 @@ export default function Page() {
       </div>
     </div>
 
-  );
+)}
+</div>
+);
 }

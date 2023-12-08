@@ -25,21 +25,21 @@ export default async function handler(
     }
     res.status(500).json({ success: false, error: "Failed to create the player." });
     return;
-  }
+  }}
 
-  // Handle GET request
-  if (req.method === "GET") {
-    const response = await fetch(`${NEXT_PUBLIC_API}/players/`);
+//   // Handle GET request
+//   if (req.method === "GET") {
+//     const response = await fetch(`${NEXT_PUBLIC_API}/players/`);
 
-    if (response.ok) {
-      const players = await response.json();
-      res.status(200).json(players);
-      return;
-    }
-    res.status(500).json({ success: false, error: "Failed to fetch players." });
-    return;
-  }
+//     if (response.ok) {
+//       const players = await response.json();
+//       res.status(200).json(players);
+//       return;
+//     }
+//     res.status(500).json({ success: false, error: "Failed to fetch players." });
+//     return;
+//   }
 
-  // Handle other methods
-  res.status(405).json({ success: false, error: "Method not allowed." });
-}
+//   // Handle other methods
+//   res.status(405).json({ success: false, error: "Method not allowed." });
+// }

@@ -8,4 +8,11 @@ export interface Game {
   createdAt: Date;
   winnerTeam: Team;
   loserTeam: Team;
+  isOptimistic: Boolean;
+  delta: number
+}
+
+export interface NewGame {
+  winnerTeam: Team;
+  loserTeam: Team;
 }

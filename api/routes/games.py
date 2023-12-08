@@ -10,15 +10,8 @@ from uuid import UUID
 
 router = APIRouter()
 
-
-
-
-
-
-
-
-@router.post("/")
-def create_game(game: GameCreate, db: Session = Depends(get_db)):
+@router.post("/{session_id}")
+def create_game(session_id: UUID, game: GameCreate, db: Session = Depends(get_db)):
     try:
         # If the inputs are list-like, convert them to string
         winner_team_str = json.dumps(game.winnerTeam) if isinstance(game.winnerTeam, list) else game.winnerTeam
@@ -32,12 +25,11 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     db.add(db_game)
 
     # If a session_id is provided, associate the game with the session
-    if game.session_id:
-        session = db.query(SessionModel).filter(SessionModel.id == game.session_id).first()
-        if session:
-            session.games.append(db_game)
-        else:
-            raise HTTPException(status_code=404, detail="Session not found")
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if session:
+        session.games.append(db_game)
+    else:
+        raise HTTPException(status_code=404, detail="Session not found")
 
     db.commit()
     db.refresh(db_game)
@@ -61,7 +53,7 @@ def list_games(db: Session = Depends(get_db)):
     print(games)
     return games
 
-@router.get("/games/{session_id}")
+@router.get("/{session_id}")
 def list_games_by_session(
     session_id: str,  # Assuming session_id is a string UUID
     db: Session = Depends(get_db)

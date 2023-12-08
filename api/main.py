@@ -20,7 +20,7 @@ init_db()
 
 # Add CORS middleware settings
 origins = [
-    "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001" # Assuming your frontend is running on port 3000
+    "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001" 
     # Add other origins if needed
 ]
 

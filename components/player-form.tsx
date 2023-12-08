@@ -6,23 +6,46 @@ import { DataContext } from "../data";
 import { animals, PlayerAnimal } from "../domain/Player";
 import Button from "./button";
 import Card from "./card";
+import { useRouter } from 'next/router';
+import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
+import { NewPlayer } from "../domain/Player";
+
 
 function PlayerForm({ onClose }: { onClose: () => void }) {
-  const { refresh, players } = useContext(DataContext);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { players } = useContext(DataContext);
   const [name, setName] = useState("");
   const [animal, setAnimal] = useState<PlayerAnimal | "">("");
 
-  async function handeSubmit(e: MouseEvent<HTMLButtonElement>) {
+  const sessionId = router.query.sessionId as string;
+  const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
+
+  const postPlayerMutation = useMutation({
+    mutationFn: (newPlayerData: NewPlayer) => axios.post(`${NEXT_PUBLIC_API}/players/${sessionId}`, newPlayerData),
+    onSuccess: () => {
+      // Correct usage of invalidateQueries with query filters
+      queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
+    },
+    mutationKey: ['addPlayer']
+  });
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (!animal || !name) {
       return;
     }
 
-    e.preventDefault();
-    await axios.post("/api/players", { name, animal });
-    void refresh();
-    setName("");
+    const newGame: NewPlayer = {
+      animal: animal,
+      name:name
+    };
+
+    postPlayerMutation.mutate(newGame);
     onClose();
   }
+
 
   return (
     <Card className="flex flex-col mb-4">
@@ -60,7 +83,7 @@ function PlayerForm({ onClose }: { onClose: () => void }) {
           <span className="flex-grow" />
         )}
         <Button onClick={onClose}>cancel</Button>
-        <Button backgroundColor="bg-green-700" onClick={handeSubmit}>
+        <Button backgroundColor="bg-green-700" onClick={handleSubmit}>
           create
         </Button>
       </div>

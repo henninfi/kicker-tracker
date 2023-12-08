@@ -17,8 +17,8 @@ class GameBase(BaseModel):
         orm_mode = True
 
 class GameCreate(GameBase):
-    session_id: UUID # ID of the session to associate with
-    pass
+    pass # ID of the session to associate with
+
 
 class GameOut(GameCreate):
     id: UUID
