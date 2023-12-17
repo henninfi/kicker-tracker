@@ -1,27 +1,31 @@
 import { SessionCreateData, SessionOut, SessionResponse} from './sessiontypes'
+import axios from 'axios';
 
 const NEXT_PUBLIC_API = process.env.NEXT_PUBLIC_API;
+
+
 
 export async function createSession(sessionData: SessionCreateData): Promise<SessionResponse> {
     if (!NEXT_PUBLIC_API) {
         throw new Error("API URL is not defined");
     }
-    console.log(JSON.stringify(sessionData))
-    const response = await fetch(`${NEXT_PUBLIC_API}/sessions/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(sessionData),
-    });
 
-    
+    console.log(JSON.stringify(sessionData));
 
-    if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+    try {
+        const config = {
+            withCredentials: true,  // This tells axios to send cookies along with the request
+          };
+        const response = await axios.post(`${NEXT_PUBLIC_API}/sessions/`, sessionData, config);
+        return response.data as SessionResponse;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(`Error: ${error.response?.status}`);
+        } else {
+            // Handle non-Axios errors
+            throw new Error("An unexpected error occurred");
+        }
     }
-
-    return await response.json() as SessionResponse;
 }
 
 
@@ -30,18 +34,20 @@ export async function getSession(id: string): Promise<SessionOut> {
         throw new Error("API URL is not defined");
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API}/sessions/${id}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+    try {
+        const config = {
+            withCredentials: true,  // This tells axios to send cookies along with the request
+          };
+        const response = await axios.get(`${NEXT_PUBLIC_API}/sessions/${id}`, config);
+        return response.data as SessionOut;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(`Error: ${error.response?.status}`);
+        } else {
+            // Handle non-Axios errors
+            throw new Error("An unexpected error occurred");
+        }
     }
-
-    return await response.json() as SessionOut;
 }
 
 

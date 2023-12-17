@@ -41,12 +41,6 @@ function PlayerList() {
 
   const rankedPlayers = leaderboard.getRankedPlayers();
 
-  
-
- 
-
-  
-  // console.log("rankedPlayers", rankedPlayers)
   const [activePlayers, retiredPlayers] = partition(
     rankedPlayers,
     (player) => !player.isRetired
@@ -83,32 +77,41 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
   
 
   async function handleSave() {
-    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, values);
+    const config = {
+      withCredentials: true,
+    };
+
+    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, values, config);
     setIsNameEdit(false);
     setIsAnimalEdit(false);
     queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   async function handleRetirement() {
+    const config = {
+      withCredentials: true,
+    };
     const confirmed = confirm("Are you sure you want to retire this player?");
     if (!confirmed) {
       return;
     }
-    console.log('player', player)
     await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, {
       ...player,
       isRetired: true,
-    });
+    },config);
     setIsNameEdit(false);
     setIsAnimalEdit(false);
     queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   async function handleComeback() {
+    const config = {
+      withCredentials: true,
+    };
     await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, {
       ...player,
       isRetired: false,
-    });
+    }, config);
     setIsNameEdit(false);
     setIsAnimalEdit(false);
     queryClient.invalidateQueries({ queryKey: ['players', sessionId] });

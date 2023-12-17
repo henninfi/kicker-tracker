@@ -6,12 +6,20 @@ from database import get_db
 from typing import List
 import json
 from uuid import UUID
+from routes.auth import auth
+from fief_client import FiefUserInfo
 
 
 router = APIRouter()
 
 @router.post("/{session_id}")
-def create_game(session_id: UUID, game: GameCreate, db: Session = Depends(get_db)):
+def create_game(
+    session_id: UUID, 
+    game: GameCreate, 
+    user: FiefUserInfo = Depends(auth.current_user()),
+    db: Session = Depends(get_db)
+    ):
+
     try:
         # If the inputs are list-like, convert them to string
         winner_team_str = json.dumps(game.winnerTeam) if isinstance(game.winnerTeam, list) else game.winnerTeam
@@ -35,11 +43,13 @@ def create_game(session_id: UUID, game: GameCreate, db: Session = Depends(get_db
     db.refresh(db_game)
     return db_game
 
-
-
-
 @router.delete("/{game_id}", response_model=dict)
-def delete_game(game_id: str, db: Session = Depends(get_db)):
+def delete_game(
+    game_id: str, 
+    user: FiefUserInfo = Depends(auth.current_user()),
+    db: Session = Depends(get_db)
+    ):
+
     db_game = db.query(Game).filter(Game.id == game_id).first()
     if not db_game:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -48,7 +58,10 @@ def delete_game(game_id: str, db: Session = Depends(get_db)):
     return {"status": "success"}
 
 @router.get("/")
-def list_games(db: Session = Depends(get_db)):
+def list_games(
+    user: FiefUserInfo = Depends(auth.current_user()), 
+    db: Session = Depends(get_db)
+    ):
     games = db.query(Game).all()
     print(games)
     return games
@@ -56,6 +69,7 @@ def list_games(db: Session = Depends(get_db)):
 @router.get("/{session_id}")
 def list_games_by_session(
     session_id: str,  # Assuming session_id is a string UUID
+    user: FiefUserInfo = Depends(auth.current_user()),
     db: Session = Depends(get_db)
 ):
     # Query for the session first to check if it exists

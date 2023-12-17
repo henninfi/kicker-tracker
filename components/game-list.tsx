@@ -111,10 +111,13 @@ function GameItem({ game }: { game: Game }) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${NEXT_PUBLIC_API}/games/${id}`);
+      const config = {
+        withCredentials: true,  // This tells axios to send cookies along with the request
+      };
+      await axios.delete(`${NEXT_PUBLIC_API}/games/${id}`, config);
       
       // Update the games query data
-      queryClient.setQueryData(['games'], (oldData) => {
+      queryClient.setQueryData<Game[]>(['games'], (oldData) => {
         // Check if oldData exists and is an array
         if (Array.isArray(oldData)) {
           // Remove the deleted game from the array

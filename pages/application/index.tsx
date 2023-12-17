@@ -44,10 +44,18 @@ export default function Page() {
   const userinfo = useFiefUserinfo();
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
-  
+
+
   const gamesQuery = useQuery({
     queryKey: ['games', sessionId],
-    queryFn: () => axios.get(`${NEXT_PUBLIC_API}/games/${sessionId}`).then(res => res.data),
+    queryFn: () => {
+      // Axios configuration for cross-origin requests
+      const config = {
+        withCredentials: true,  // This tells axios to send cookies along with the request
+      };
+  
+      return axios.get(`${NEXT_PUBLIC_API}/games/${sessionId}`, config).then(res => res.data);
+    },
     select: (data: any[]) => data.map((game: any) => ({
       ...game,
       winnerTeam: JSON.parse(game.winnerTeam),
@@ -57,17 +65,32 @@ export default function Page() {
     enabled: !!sessionId,
   });
   
+  
 
   const playersQuery = useQuery({
     queryKey: ['players', sessionId],
-    queryFn: () => axios.get(`${NEXT_PUBLIC_API}/players/${sessionId}`).then(res => res.data),
+    queryFn: () => {
+      // Axios configuration for cross-origin requests
+      const config = {
+        withCredentials: true,  // This tells axios to send cookies along with the request
+      };
+  
+      return axios.get(`${NEXT_PUBLIC_API}/players/${sessionId}`, config).then(res => res.data);
+    },
     enabled: !!sessionId,
   });
-
+  
   const tournamentsQuery = useQuery({
     queryKey: ['tournaments'],
-    queryFn: () => axios.get(`${NEXT_PUBLIC_API}/tournaments`).then(res => res.data)
-  });
+    queryFn: () => {
+      // Axios configuration for cross-origin requests
+      const config = {
+        withCredentials: true,  // This tells axios to send cookies along with the request
+      };
+  
+      return axios.get(`${NEXT_PUBLIC_API}/tournaments`, config).then(res => res.data);
+    }
+  });  
 
   useEffect(() => {
     // Check for session type in URL and update state accordingly
@@ -150,7 +173,7 @@ const leaderboard = useMemo(() => {
               <GameForm onClose={() => setIsAddingGame(false)} />
             ) : isAddingTournament ? (
               <TournamentForm onClose={() => setIsAddingTournament(false)} />
-            ) : !isAuthenticated ? (
+            ) : isAuthenticated ? (
               <div className="flex">
                 {/* <Card
                   className="basis-1/2 mr-4 text-center cursor-pointer p-4"
@@ -197,7 +220,7 @@ const leaderboard = useMemo(() => {
         )}
       </DataContext.Provider>
 
-      <div className="mt-4 flex justify-center underline">
+      {/* <div className="mt-4 flex justify-center underline">
         <a
           href="https://github.com/JonathanWbn/kicker-tracker"
           target="_blank"
@@ -205,7 +228,7 @@ const leaderboard = useMemo(() => {
         >
           Source
         </a>
-      </div>
+      </div> */}
     </div>
 
 )}

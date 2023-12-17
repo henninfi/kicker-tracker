@@ -3,10 +3,16 @@
 
 
 from models import Base
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import FastAPI
 from database import engine
-from routes import games,players,tournaments, sessions
+from routes import games,players,tournaments, sessions, auth
 from fastapi.middleware.cors import CORSMiddleware  # Import this
+
+from fastapi import FastAPI
+
+
+from typing import Dict, Optional
+import uuid
 
 app = FastAPI()
 
@@ -36,3 +42,4 @@ app.include_router(games.router, prefix="/games", tags=["games"])
 app.include_router(players.router, prefix="/players", tags=["players"])
 app.include_router(tournaments.router, prefix="/tournaments", tags=["tournaments"])
 app.include_router(sessions.router, prefix="/sessions", tags=["sessions"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])

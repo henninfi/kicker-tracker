@@ -1,5 +1,5 @@
 from pydantic import BaseModel, constr, validator
-from typing import List, Union
+from typing import List, Union, Text
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -14,7 +14,7 @@ class GameBase(BaseModel):
     loserTeam: List[Optional[str]]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class GameCreate(GameBase):
     pass # ID of the session to associate with
@@ -36,9 +36,10 @@ class PlayerCreate(PlayerBase):
 
 class PlayerOut(PlayerBase):
     id: UUID
+    createdAt: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Tournament
 class TournamentBase(BaseModel):
@@ -58,12 +59,16 @@ class TournamentOut(TournamentBase):
 # Session
 class SessionBase(BaseModel):
     session_type: str
+    name: Optional[str]
+    description: Optional[str]
     end_date: Optional[datetime] = None
     player_ids: Optional[List[UUID]] = []
     game_ids: Optional[List[UUID]] = []
+    
 
 class SessionCreate(SessionBase):
     pass
 
 class SessionOut(SessionCreate):
     id: UUID
+    createdAt: datetime

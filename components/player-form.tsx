@@ -11,7 +11,7 @@ import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-q
 import { NewPlayer } from "../domain/Player";
 
 
-function PlayerForm({ onClose }: { onClose: () => void }) {
+export function PlayerForm({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -21,15 +21,26 @@ function PlayerForm({ onClose }: { onClose: () => void }) {
 
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
+  const config = {
+    withCredentials: true,
+  };
 
   const postPlayerMutation = useMutation({
-    mutationFn: (newPlayerData: NewPlayer) => axios.post(`${NEXT_PUBLIC_API}/players/${sessionId}`, newPlayerData),
+    mutationFn: (newPlayerData: NewPlayer) => {
+      // Adjust the URL based on whether sessionId is provided
+      const url = sessionId 
+        ? `${NEXT_PUBLIC_API}/players/${sessionId}` 
+        : `${NEXT_PUBLIC_API}/players`;  // Adjust this URL as needed
+  
+      return axios.post(url, newPlayerData, config);
+    },
     onSuccess: () => {
-      // Correct usage of invalidateQueries with query filters
+      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
     },
     mutationKey: ['addPlayer']
   });
+  
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();

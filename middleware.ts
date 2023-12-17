@@ -4,7 +4,11 @@ import { fiefAuth } from './fief';
 
 const authMiddleware = fiefAuth.middleware([  
   {
-    matcher: '/private',  
+    matcher: '/application:path*',  
+    parameters: {},
+  },
+  {
+    matcher: '/my_sessions:path*',  
     parameters: {},
   },
   {

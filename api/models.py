@@ -1,5 +1,5 @@
 #New
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, Float
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, Float, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from uuid import uuid4
@@ -10,18 +10,22 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+import pytz
 
 
 
 Base = declarative_base()
 
 
-# Association table for the many-to-many relationship between Session and Player
-session_player_association = Table(
-    'session_player', Base.metadata,
-    Column('session_id', UUID(as_uuid=True), ForeignKey('sessions.id'), primary_key=True),
-    Column('player_id', UUID(as_uuid=True), ForeignKey('players.id'), primary_key=True)
-)
+# Association object for session_player with additional 'role' field
+class SessionPlayer(Base):
+    __tablename__ = 'session_player'
+    session_id = Column(UUID(as_uuid=True), ForeignKey('sessions.id'), primary_key=True)
+    player_id = Column(UUID(as_uuid=True), ForeignKey('players.id'), primary_key=True)
+    role = Column(String, default="viewer")
+
+    session = relationship("Session", back_populates="players")
+    player = relationship("Player", back_populates="sessions")
 
 # Association table for the many-to-many relationship between Session and Game
 session_game_association = Table(
@@ -35,7 +39,7 @@ class Game(Base):
     __tablename__ = 'games'
     
     id = Column(UUID, primary_key=True, default=lambda: str(uuid4()))
-    createdAt = Column(DateTime, default=datetime.utcnow)
+    createdAt = Column(DateTime, default=lambda: datetime.now(pytz.timezone('Europe/Oslo')))
     winnerTeam = Column(String)
     loserTeam = Column(String)
 
@@ -45,18 +49,21 @@ class Game(Base):
 class Player(Base):
     __tablename__ = "players"
 
-    id = Column(UUID, primary_key=True, index=True)
+    id = Column(UUID, primary_key=True, default=lambda: str(uuid4()))
     name = Column(String, index=True)
     animal = Column(String, index=True)
     isRetired = Column(Boolean, default=False)
+    isSession_player = Column(Boolean, default=True)
+    createdAt = Column(DateTime, default=lambda: datetime.now(pytz.timezone('Europe/Oslo')))
+    # email = Column(String, unique=True, index=True)
 
-    sessions = relationship("Session", secondary=session_player_association, back_populates="players")
+    sessions = relationship("SessionPlayer", back_populates="player")
 
 class Tournament(Base):
     __tablename__ = 'tournaments'
     
     id = Column(String, primary_key=True)
-    createdAt = Column(DateTime, default=datetime.utcnow)
+    createdAt = Column(DateTime, default=lambda: datetime.now(pytz.timezone('Europe/Oslo')))
     wagerPercentage = Column(Float)
     players = Column(ARRAY(String))
     first = Column(String) # This should be updated based on the TournamentTeam structure
@@ -67,9 +74,12 @@ class Session(Base):
     __tablename__ = 'sessions'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String)
+    description = Column(Text)
     session_type = Column(String, index=True)  # For example, 'ladder', '1-day-pass', etc.
     end_date = Column(DateTime, nullable=True)  # Optional end date
+    createdAt = Column(DateTime, default=lambda: datetime.now(pytz.timezone('Europe/Oslo')))
 
     # Setting up many-to-many relationships
-    players = relationship("Player", secondary=session_player_association, back_populates="sessions")
+    players = relationship("SessionPlayer", back_populates="session")
     games = relationship("Game", secondary=session_game_association, back_populates="sessions")

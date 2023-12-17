@@ -24,9 +24,12 @@ function GameForm({ onClose }: { onClose: () => void }) {
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
+  const config = {
+    withCredentials: true,
+  };
   // Define the mutation for posting a new game
   const postGameMutation = useMutation({
-    mutationFn: (newGameData: NewGame) => axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, newGameData),
+    mutationFn: (newGameData: NewGame) => axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, newGameData, config),
     onSuccess: () => {
       // Correct usage of invalidateQueries with query filters
       queryClient.invalidateQueries({ queryKey: ['games', sessionId] });
@@ -67,23 +70,6 @@ function GameForm({ onClose }: { onClose: () => void }) {
       { id: "", createdAt: Date.now() as any, winnerTeam, loserTeam, isOptimistic: false, delta:0 },
       leaderboard.getRankedPlayers()
     );
-
-  // async function handleSubmit(e: MouseEvent<HTMLButtonElement>) {
-  //   if (!isComplete) {
-  //     return;
-  //   }
-
-  //   await axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, {
-  //     winnerTeam: [winner1, winner2],
-  //     loserTeam: [loser1, loser2],
-  //   });
-  //   setLoserTeam(["", ""]);
-  //   setWinnerTeam(["", ""]);
-  //   onClose();
-
-    
-  // }
-
 
 
   function handleWinnerSelect(playerId: PlayerId) {
