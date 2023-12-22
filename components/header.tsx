@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react';
+// import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react';
 import Link from 'next/link';
+import { useRedirectFunctions, useLogoutFunction, useAuthInfo } from "@propelauth/react";
 
 const Header: React.FunctionComponent = () => {
-  const isAuthenticated = useFiefIsAuthenticated(); 
-  const userinfo = useFiefUserinfo();
+  // const isAuthenticated = useFiefIsAuthenticated(); 
+  // const userinfo = useFiefUserinfo();
+  const {redirectToLoginPage, redirectToSignupPage, redirectToAccountPage} = useRedirectFunctions()
+  const logoutFunction = useLogoutFunction()
+  const authInfo = useAuthInfo();
+  const logoutFn = useLogoutFunction();
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -44,22 +50,24 @@ const Header: React.FunctionComponent = () => {
 
         {isDropdownOpen && (
             <div className="absolute right-0 mt-2 py-2 w-72 bg-slate-200 rounded-md shadow-xl z-20">
-            {!isAuthenticated && <Link className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" href="/login" passHref>
-              Login
-            </Link>}
-            {isAuthenticated && userinfo && (
+              <div>
+                {!authInfo.isLoggedIn &&  <button className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => redirectToLoginPage() /*(2)*/}>Login</button>}
+              </div>
+              {authInfo.isLoggedIn && authInfo.user && (
               <div>
                 <a className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  {userinfo.email}
+                  {authInfo.user.email}
                 </a>
-                {/* {userinfo.fields && (
-                  <div className="px-4 py-2 text-sm text-gray-700">
-                    {Object.entries(userinfo.fields).map(([key, value]) => (
-                      <div key={key}>{key}: {value}</div>
-                    ))}
-                  </div>
-                )} */}
-                <Link className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" href="/logout">Logout</Link>
+                    {/* {userinfo.fields && (
+                      <div className="px-4 py-2 text-sm text-gray-700">
+                        {Object.entries(userinfo.fields).map(([key, value]) => (
+                          <div key={key}>{key}: {value}</div>
+                        ))}
+                      </div>
+                    )} */}
+                <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <button  onClick={() => logoutFn(true) /*(2)*/}>Logout</button>
+                </div>
               </div>
             )}
           </div>

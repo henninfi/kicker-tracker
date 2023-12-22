@@ -3,32 +3,42 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react';
+// import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react';
 import { useQuery } from '@tanstack/react-query';
 import SessionCard from '../../components/sessioncard'; // Ensure to create this component
 import NewSessionCard from '../../components/NewSessionCard'; // Ensure to create this component
 import { SessionOut } from '../api/sessions/sessiontypes'
-import { useFiefAccessTokenInfo } from '@fief/fief/nextjs/react';
+// import { useFiefAccessTokenInfo } from '@fief/fief/nextjs/react';
+import { useRedirectFunctions, useLogoutFunction, useAuthInfo } from "@propelauth/react";
+
 
 
 const MySessions = () => {
-  const isAuthenticated = useFiefIsAuthenticated();
-  const accessTokenInfo = useFiefAccessTokenInfo();
-  const userinfo = useFiefUserinfo();
+  const authInfo = useAuthInfo();
   const router = useRouter();
   const NEXT_PUBLIC_API = process.env.NEXT_PUBLIC_API;
 
   const { data: sessions, isLoading, isError } = useQuery<SessionOut[]>({
     queryKey: ['mySessions'],
-    queryFn: () => {
-      // Axios configuration for cross-origin requests
-      const config = {
-        withCredentials: true,  // This tells axios to send cookies along with the request
+    queryFn: async () => {
+      if (!NEXT_PUBLIC_API) {
+        throw new Error("API URL is not defined");
+      }
+      console.log(authInfo.accessToken)
+  
+      if (!authInfo || !authInfo.accessToken) {
+        throw new Error("Access token is missing");
+      }
+  
+      const headers = {
+        Authorization: `Bearer ${authInfo.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
       };
   
-      return axios.get(`${NEXT_PUBLIC_API}/sessions/user-sessions/`, config).then(res => res.data);;
+      const response = await axios.get(`${NEXT_PUBLIC_API}/sessions/user-sessions/`, { headers });
+      return response.data;
     },
-    enabled: isAuthenticated,
+    enabled: authInfo.isLoggedIn,
   });
 
 
@@ -46,9 +56,9 @@ const MySessions = () => {
       <h1 className="text-xl font-bold mb-4">My Sessions</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {
-        accessTokenInfo && accessTokenInfo.permissions.includes('session:create') && <NewSessionCard />
+        authInfo.isLoggedIn && <NewSessionCard />
         }
-        {(sessions || []).map((session) => (
+        {authInfo.isLoggedIn && (sessions || []).map((session) => (
           <SessionCard key={session.id} session={session} />
         ))}
       </div>

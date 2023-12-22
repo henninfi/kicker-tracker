@@ -8,6 +8,7 @@ from typing import List
 from uuid import UUID 
 from routes.auth import auth
 from fief_client import FiefUserInfo
+from propelauth_py.user import User
 
 
 router = APIRouter()
@@ -15,11 +16,11 @@ router = APIRouter()
 @router.post("/", response_model=PlayerOut)
 def create_player(
     player: PlayerCreate, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
     # Create a new player
-    db_player = Player(id=UUID(user["sub"]), name=player.name, animal=player.animal, isRetired=player.isRetired, isSession_player = False)
+    db_player = Player(id=UUID(user.user_id), name=player.name, animal=player.animal, isRetired=player.isRetired, isSession_player = False)
     db.add(db_player)       
     db.commit()
     db.refresh(db_player)
@@ -30,7 +31,7 @@ def create_player(
 def create_player_in_session(
     session_id: UUID, 
     player: PlayerCreate, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
     # Create a new player
@@ -57,7 +58,7 @@ def create_player_in_session(
 def update_player(
     player_id: str, 
     player: PlayerCreate, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
 
@@ -78,7 +79,7 @@ def update_player(
 @router.delete("/{player_id}", response_model=dict)
 def delete_player(
     player_id: str, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
 
@@ -91,7 +92,7 @@ def delete_player(
 
 @router.get("/", response_model=List[PlayerOut])
 def list_players(
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)):
     players = db.query(Player).all()
     return players
@@ -99,7 +100,7 @@ def list_players(
 @router.get("/{session_id}", response_model=List[PlayerOut])
 def list_players_by_session(
     session_id: UUID, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
 ):
     # Query for the session first to check if it exists

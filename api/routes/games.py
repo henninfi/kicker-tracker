@@ -8,6 +8,7 @@ import json
 from uuid import UUID
 from routes.auth import auth
 from fief_client import FiefUserInfo
+from propelauth_py.user import User
 
 
 router = APIRouter()
@@ -16,7 +17,7 @@ router = APIRouter()
 def create_game(
     session_id: UUID, 
     game: GameCreate, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
 
@@ -46,7 +47,7 @@ def create_game(
 @router.delete("/{game_id}", response_model=dict)
 def delete_game(
     game_id: str, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
 
@@ -59,7 +60,7 @@ def delete_game(
 
 @router.get("/")
 def list_games(
-    user: FiefUserInfo = Depends(auth.current_user()), 
+    user: User = Depends(auth.require_user), 
     db: Session = Depends(get_db)
     ):
     games = db.query(Game).all()
@@ -69,7 +70,7 @@ def list_games(
 @router.get("/{session_id}")
 def list_games_by_session(
     session_id: str,  # Assuming session_id is a string UUID
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
 ):
     # Query for the session first to check if it exists

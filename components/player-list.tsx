@@ -7,9 +7,10 @@ import { RatedPlayer } from "../domain/Leaderboard";
 import { animals } from "../domain/Player";
 import Button from "./button";
 import Card from "./card";
-import { useFiefUserinfo } from '@fief/fief/nextjs/react';
+// import { useFiefUserinfo } from '@fief/fief/nextjs/react';
 import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
+import { useRedirectFunctions, useLogoutFunction, useAuthInfo } from "@propelauth/react";
 
 const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
@@ -67,7 +68,8 @@ function PlayerList() {
 
 function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
   const router = useRouter();
-  const user = useFiefUserinfo();
+  // const user = useFiefUserinfo();
+  const authInfo = useAuthInfo();
   const { players } = useContext(DataContext);
   const [isNameEdit, setIsNameEdit] = useState(false);
   const [isAnimalEdit, setIsAnimalEdit] = useState(false);
@@ -123,7 +125,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
         player.isRetired ? "opacity-50" : ""
       }`}
     >
-      {isAnimalEdit && user ? (
+      {isAnimalEdit && authInfo.user ? (
         <div className="flex flex-col">
           <div className="flex flex-wrap">
             <div
@@ -165,7 +167,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
               ))}
           </div>
           <div className="flex justify-around">
-            {player.isRetired && user ? (
+            {player.isRetired && authInfo.user ? (
               <Button onClick={handleComeback}>come back</Button>
             ) : (
               <Button onClick={handleRetirement}>retire</Button>
@@ -176,7 +178,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
       ) : (
         <>
           <p className="mr-2 w-4 text-slate-300 text-center">{rank || "-"}</p>
-          {player.isTournamentWinner && user ? (
+          {player.isTournamentWinner && authInfo.user ? (
             <div className="w-6 flex justify-center items-center flex-col relative">
               <div className="absolute text-xs -right-1 -bottom-1">🥇</div>
               <Image
@@ -196,7 +198,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
               onClick={() => setIsAnimalEdit(true)}
             />
           )}
-          {isNameEdit && user ? (
+          {isNameEdit && authInfo.user ? (
             <div className="flex grow">
               <input
                 autoFocus

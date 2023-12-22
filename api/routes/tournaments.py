@@ -9,13 +9,14 @@ from database import get_db
 from typing import List
 from routes.auth import auth
 from fief_client import FiefUserInfo
+from propelauth_py.user import User
 
 router = APIRouter()
 
 @router.post("/", response_model=TournamentOut)
 def create_tournament(
     tournament: TournamentCreate, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
 
@@ -35,7 +36,7 @@ def create_tournament(
 @router.delete("/{tournament_id}", response_model=dict)
 def delete_tournament(
     tournament_id: str, 
-    user: FiefUserInfo = Depends(auth.current_user()),
+    user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)):
     db_tournament = db.query(Tournament).filter(Tournament.id == tournament_id).first()
     if not db_tournament:
@@ -47,6 +48,6 @@ def delete_tournament(
 @router.get("/", response_model=List[TournamentOut])
 def list_tournaments(
     db: Session = Depends(get_db),
-    user: FiefUserInfo = Depends(auth.current_user())):
+    user: User = Depends(auth.require_user)):
     tournaments = db.query(Tournament).all()
     return tournaments

@@ -3,10 +3,12 @@
 
 
 from models import Base
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from database import engine
-from routes import games,players,tournaments, sessions, auth
+from routes import sessions, games, players, tournaments
 from fastapi.middleware.cors import CORSMiddleware  # Import this
+from propelauth_fastapi import init_auth
+from propelauth_py.user import User
 
 from fastapi import FastAPI
 
@@ -15,6 +17,8 @@ from typing import Dict, Optional
 import uuid
 
 app = FastAPI()
+
+auth = init_auth("https://046425272.propelauthtest.com", "bbddd842b0cec6f0c787e97b915ce786495330bb6b3f8f8b838e5183ef2e8055ec776de721b94bd641b918acec523bb4")
 
 
 def init_db():
@@ -42,4 +46,4 @@ app.include_router(games.router, prefix="/games", tags=["games"])
 app.include_router(players.router, prefix="/players", tags=["players"])
 app.include_router(tournaments.router, prefix="/tournaments", tags=["tournaments"])
 app.include_router(sessions.router, prefix="/sessions", tags=["sessions"])
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
+# app.include_router(auth.router, prefix="/auth", tags=["auth"])

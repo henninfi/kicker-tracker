@@ -17,7 +17,7 @@ import { Game, Team } from "../../domain/Game";
 import { Leaderboard } from "../../domain/Leaderboard";
 import { Player, PlayerId } from "../../domain/Player";
 import { Tournament } from "../../domain/Tournament";
-import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
+// import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
 import { useRouter } from 'next/router';
 import SessionMenu from '../../components/SessionMenu';
 import {
@@ -27,6 +27,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
+import { useRedirectFunctions, useLogoutFunction, useAuthInfo } from "@propelauth/react";
 
 export default function Page() {
   const router = useRouter();
@@ -40,8 +41,11 @@ export default function Page() {
   const [isShowingGraph, setIsShowingGraph] = useState(false);
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [isAddingTournament, setIsAddingTournament] = useState(false);
-  const isAuthenticated = useFiefIsAuthenticated(); 
-  const userinfo = useFiefUserinfo();
+  // const isAuthenticated = useFiefIsAuthenticated(); 
+  // const userinfo = useFiefUserinfo();
+  const authInfo = useAuthInfo();
+  
+
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
@@ -173,7 +177,7 @@ const leaderboard = useMemo(() => {
               <GameForm onClose={() => setIsAddingGame(false)} />
             ) : isAddingTournament ? (
               <TournamentForm onClose={() => setIsAddingTournament(false)} />
-            ) : isAuthenticated ? (
+            ) : authInfo.isLoggedIn ? (
               <div className="flex">
                 {/* <Card
                   className="basis-1/2 mr-4 text-center cursor-pointer p-4"

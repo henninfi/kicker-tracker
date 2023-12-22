@@ -3,12 +3,14 @@ import { useRouter } from 'next/router';
 import Card from "../../components/card"; 
 import { SessionCreateData } from '../api/sessions/sessiontypes'
 import { createSession } from '../api/sessions'
+import { useAuthInfo } from "@propelauth/react";
 
 export default function SessionMenuPage() {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [sessionData, setSessionData] = useState({ name: '', description: '', session_type: '' });
   const [selectedChoice, setSelectedChoice] = useState<'casual' | 'ranked' | null>(null);
+  const authInfo = useAuthInfo();
 
   const handleChoice = (choice: 'casual' | 'ranked') => {
     const sessionType = choice === 'casual' ? 'ladder' : '1-day-pass';
@@ -24,7 +26,7 @@ export default function SessionMenuPage() {
   const handleSubmit = async () => {
     try {
       // Call your API to create a session
-      const response = await createSession(sessionData);
+      const response = await createSession(sessionData, authInfo.accessToken);
 
       // Navigate to the next page with session ID
       router.push(`/application?sessionId=${response.id}`);

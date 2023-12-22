@@ -13,18 +13,19 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { AuthProvider } from "@propelauth/react";
 
 const queryClient = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <FiefAuthProvider currentUserPath="/api/current-user"> 
+      <AuthProvider authUrl={process.env.NEXT_PUBLIC_AUTH_URL as string}>
           <RootLayout>
               <Header />
               <Component {...pageProps} />
           </RootLayout>
-      </FiefAuthProvider> 
+      </AuthProvider >
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
     
