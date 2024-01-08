@@ -3,6 +3,7 @@
 import { SessionProvider } from 'next-auth/react'
 import { FiefAuthProvider } from '@fief/fief/nextjs/react';
 import Header from '../components/header'
+import NavBar from '../components/ui/Navbar'
 import RootLayout from '../app/layout'
 import type { AppProps } from 'next/app';
 import {
@@ -13,7 +14,8 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { AuthProvider } from "@propelauth/react";
+import { AuthProvider, RequiredAuthProvider, RedirectToLogin, } from "@propelauth/react";
+import { Toaster } from '../components/ui/toaster'
 
 const queryClient = new QueryClient();
 
@@ -22,7 +24,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider authUrl={process.env.NEXT_PUBLIC_AUTH_URL as string}>
           <RootLayout>
-              <Header />
+          <Toaster />
+          <NavBar />
               <Component {...pageProps} />
           </RootLayout>
       </AuthProvider >

@@ -17,6 +17,7 @@ import { Game, Team } from "../../domain/Game";
 import { Leaderboard } from "../../domain/Leaderboard";
 import { Player, PlayerId } from "../../domain/Player";
 import { Tournament } from "../../domain/Tournament";
+import { SessionOut, SessionListType } from '../api/sessions/sessiontypes'
 // import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
 import { useRouter } from 'next/router';
 import SessionMenu from '../../components/SessionMenu';
@@ -27,38 +28,69 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
-import { useRedirectFunctions, useLogoutFunction, useAuthInfo } from "@propelauth/react";
+import { useRedirectFunctions, useLogoutFunction, useAuthInfo, withAuthInfo,withRequiredAuthInfo  } from "@propelauth/react";
+import InviteForm from '../../components/invite-form'
+import ShareLinkButton from "../../components/ShareLinkButton";
 
-export default function Page() {
+
+const Page = withRequiredAuthInfo((props) => {
   const router = useRouter();
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<"games" | "players">("games");
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
   const [isShowingGraph, setIsShowingGraph] = useState(false);
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [isAddingTournament, setIsAddingTournament] = useState(false);
+  const [isInvitingFriendByEmail, setIsInvitingFriendByEmail] = useState(false);
+  const [isInvitingFriendByURL, setIsInvitingFriendByURL] = useState(false);
   // const isAuthenticated = useFiefIsAuthenticated(); 
   // const userinfo = useFiefUserinfo();
   const authInfo = useAuthInfo();
   
 
+  
+
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
+  
+  let { data: currentSession, isLoading, isError } = useQuery<SessionOut>({
+    queryKey: ['currentSession'],
+    queryFn: async () => {
+      if (!NEXT_PUBLIC_API) {
+        throw new Error("API URL is not defined");
+      }
+      console.log(authInfo.accessToken)
+  
+      if (!authInfo.isLoggedIn) {
+        throw new Error("User is not logged in");
+      }
+  
+      const headers = {
+        Authorization: `Bearer ${authInfo.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
+      };
+  
+      const response = await axios.get(`${NEXT_PUBLIC_API}/sessions/sessions_id/${sessionId}`, { headers });
+      return response.data;
+    },
+    enabled: authInfo.isLoggedIn,
+  });
 
+  console.log('session_type', currentSession?.session_type)
   const gamesQuery = useQuery({
     queryKey: ['games', sessionId],
     queryFn: () => {
       // Axios configuration for cross-origin requests
-      const config = {
-        withCredentials: true,  // This tells axios to send cookies along with the request
+      const headers = {
+        Authorization: `Bearer ${props.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
       };
   
-      return axios.get(`${NEXT_PUBLIC_API}/games/${sessionId}`, config).then(res => res.data);
+      return axios.get(`${NEXT_PUBLIC_API}/games/${sessionId}`, { headers }).then(res => res.data);
     },
     select: (data: any[]) => data.map((game: any) => ({
       ...game,
@@ -69,17 +101,38 @@ export default function Page() {
     enabled: !!sessionId,
   });
   
+
+ 
+   // Initially assume false until found otherwise
+   let isAdmin = false;
+   let isUser = false;
+
+  // Define the function or arrow function
+  const isUserInSessionList = (currentSession: SessionOut, listType: SessionListType, userId: string) => {
+    const list = currentSession[listType] ?? [];
+    return list.includes(userId);
+  };
+  
+  // Update variables if conditions are met
+  if (authInfo.isLoggedIn && currentSession) {
+      const userId = authInfo.user?.['userId']; // Use optional chaining in case it's undefined
+      if (userId) {
+          isAdmin = isUserInSessionList(currentSession, 'admin_ids', userId);
+          isUser = isUserInSessionList(currentSession, 'user_ids', userId);
+      }
+  }
   
 
   const playersQuery = useQuery({
     queryKey: ['players', sessionId],
     queryFn: () => {
       // Axios configuration for cross-origin requests
-      const config = {
-        withCredentials: true,  // This tells axios to send cookies along with the request
+      const headers = {
+        Authorization: `Bearer ${props.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
       };
   
-      return axios.get(`${NEXT_PUBLIC_API}/players/${sessionId}`, config).then(res => res.data);
+      return axios.get(`${NEXT_PUBLIC_API}/players/${sessionId}`, { headers }).then(res => res.data);
     },
     enabled: !!sessionId,
   });
@@ -88,11 +141,12 @@ export default function Page() {
     queryKey: ['tournaments'],
     queryFn: () => {
       // Axios configuration for cross-origin requests
-      const config = {
-        withCredentials: true,  // This tells axios to send cookies along with the request
+      const headers = {
+        Authorization: `Bearer ${props.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
       };
   
-      return axios.get(`${NEXT_PUBLIC_API}/tournaments`, config).then(res => res.data);
+      return axios.get(`${NEXT_PUBLIC_API}/tournaments`, { headers }).then(res => res.data);
     }
   });  
 
@@ -148,14 +202,14 @@ const leaderboard = useMemo(() => {
       <div className="flex py-3 justify-around">
         <Button
           textSize="text-base"
-          backgroundColor={tab === "games" ? "bg-slate-600" : undefined}
+          backgroundColor={tab === "games" ? "bg-gray-300" : undefined}
           onClick={() => setTab("games")}
         >
           games
         </Button>
         <Button
           textSize="text-base"
-          backgroundColor={tab === "players" ? "bg-slate-600" : undefined}
+          backgroundColor={tab === "players" ? "bg-gray-300" : undefined}
           onClick={() => setTab("players")}
         >
           leaderboard & Settings
@@ -177,7 +231,8 @@ const leaderboard = useMemo(() => {
               <GameForm onClose={() => setIsAddingGame(false)} />
             ) : isAddingTournament ? (
               <TournamentForm onClose={() => setIsAddingTournament(false)} />
-            ) : authInfo.isLoggedIn ? (
+            ) : authInfo.isLoggedIn && isAdmin || isUser  ? (
+            // For casual game
               <div className="flex">
                 {/* <Card
                   className="basis-1/2 mr-4 text-center cursor-pointer p-4"
@@ -192,36 +247,60 @@ const leaderboard = useMemo(() => {
                   Register game ⚽
                 </Card>
               </div>
-            ) : null}
+            ) : 
+            null}
 
             <GameList />
           </>
         )}
         {tab === "players" && (
-          <>
-            {isShowingGraph ? (
-              <PlayerGraph onClose={() => setIsShowingGraph(false)} />
-            ) : isAddingPlayer ? (
-              <PlayerForm onClose={() => setIsAddingPlayer(false)} />
-            ) : (
-              <div className="flex mb-4">
-                <Card
-                  className="basis-1/2 mr-4 text-center cursor-pointer p-4"
-                  onClick={() => setIsAddingPlayer(true)}
-                >
-                  Register user 👤
-                </Card>
-                <Card
-                  onClick={() => setIsShowingGraph(true)}
-                  className="basis-1/2 text-center cursor-pointer p-4"
-                >
-                  Stats 📊
-                </Card>
-              </div>
+        <>
+          {isShowingGraph ? (
+            <PlayerGraph onClose={() => setIsShowingGraph(false)} />
+          ) : isAddingPlayer ? (
+            <PlayerForm onClose={() => setIsAddingPlayer(false)} />
+          ) : null}
+
+          <div className="flex mb-4">
+            {/* Conditional rendering for Register player button */}
+            {authInfo.isLoggedIn && currentSession?.session_type === 'casual' && (isAdmin || isUser) && (
+              <Card
+                className="basis-1/2 mr-4 text-center cursor-pointer p-4"
+                onClick={() => setIsAddingPlayer(true)}
+              >
+                Register player 👤
+              </Card>
             )}
+
+            {
+              !isInvitingFriendByURL && currentSession?.session_type === 'ranked' ? (
+                <Card
+                  onClick={() => setIsInvitingFriendByURL(true)}
+                  className="basis-1/2 mr-4 text-center cursor-pointer p-4"
+                >
+                  Invite Friends to Session
+                </Card>
+              ) : isInvitingFriendByURL ? (
+                <ShareLinkButton onClose={() => setIsInvitingFriendByURL(false)} />
+              ) : null // Do not render anything if the session is not 'ranked'
+            }
+
+
+            {/* Always show the Stats button */}
+            <Card
+              onClick={() => setIsShowingGraph(true)}
+              className="basis-1/2 text-center cursor-pointer p-4"
+            >
+              Stats 📊
+            </Card>
+          </div>
+
+          <div>
             <PlayerList />
-          </>
-        )}
+          </div>
+        </>
+      )}
+
       </DataContext.Provider>
 
       {/* <div className="mt-4 flex justify-center underline">
@@ -238,4 +317,5 @@ const leaderboard = useMemo(() => {
 )}
 </div>
 );
-}
+})
+export default Page;

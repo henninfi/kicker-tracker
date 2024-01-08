@@ -72,3 +72,7 @@ class SessionCreate(SessionBase):
 class SessionOut(SessionCreate):
     id: UUID
     createdAt: datetime
+    admin_ids: List[UUID] = []
+    user_ids: List[UUID] = []
+    viewer_ids: List[UUID] = []
+    

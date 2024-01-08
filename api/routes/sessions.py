@@ -41,17 +41,32 @@ def create_session(
 
 
 # Endpoint to get a session by ID
-@router.get("/sessions_id/{session_id}", response_model=SessionCreate)
+@router.get("/sessions_id/{session_id}", response_model=SessionOut)
 def read_session(
     session_id: UUID, 
     user: User = Depends(auth.require_user),
     db: Session = Depends(get_db)
     ):
 
-    db_session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    if db_session is None:
+    session = db.query(SessionModel)\
+                 .join(SessionPlayer)\
+                 .filter(SessionModel.id == session_id)\
+                 .filter(SessionPlayer.player_id == user.user_id)\
+                 .options(joinedload(SessionModel.players))\
+                 .first()
+    
+    if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
-    return db_session
+
+    # Find admin IDs for this session
+    admin_ids = [player.player_id for player in session.players if player.role == 'admin']
+    user_ids = [player.player_id for player in session.players if player.role == 'user']
+    viewer_ids = [player.player_id for player in session.players if player.role == 'viewer']
+    
+    # Transform the session instance to SessionOut schema and include admin_ids
+    session_data = SessionOut(**session.__dict__, admin_ids=admin_ids, user_ids=user_ids, viewer_ids=viewer_ids)
+
+    return session_data
 
 @router.get("/user-sessions/", response_model=List[SessionOut])
 def get_user_sessions(
@@ -73,8 +88,9 @@ def get_user_sessions(
 
     if not sessions:
         return []
+    
 
-    # Transforming the model instances to SessionOut schema
+    # # Transforming the model instances to SessionOut schema
     session_outputs = [SessionOut(**session.__dict__) for session in sessions]
     
     return session_outputs

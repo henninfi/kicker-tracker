@@ -9,7 +9,7 @@ function Pill({ children, className, tooltip, ...props }: Props) {
   return (
     <div
       {...props}
-      className={`bg-slate-700 rounded-full px-2 py-1 relative ${
+      className={`bg-gray-300 rounded-full px-2 py-1 relative shadow-lg border-2 hover:bg-gray-400 border-blue-600 shadow-blue-200 ${
         className || ""
       }`}
     >

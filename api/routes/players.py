@@ -4,11 +4,12 @@ import uuid
 from schemas import PlayerCreate, PlayerOut
 from models import Player, Session as SessionModel, SessionPlayer
 from database import get_db
-from typing import List
+from typing import List, Union
 from uuid import UUID 
 from routes.auth import auth
 from fief_client import FiefUserInfo
 from propelauth_py.user import User
+
 
 
 router = APIRouter()
@@ -97,11 +98,24 @@ def list_players(
     players = db.query(Player).all()
     return players
 
+@router.get("/get_current_player", response_model=Union[PlayerOut, bool])
+def get_current_player(
+    user: User = Depends(auth.require_user),
+    db: Session = Depends(get_db)
+):
+    player = db.query(Player).filter(Player.id == user.user_id).first()
+    if player:
+        return player  # Assuming player is a valid dictionary or object
+    else:
+        return False
+
 @router.get("/{session_id}", response_model=List[PlayerOut])
 def list_players_by_session(
     session_id: UUID, 
+    session_type: str = None, 
     user: User = Depends(auth.require_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+
 ):
     # Query for the session first to check if it exists
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
@@ -111,9 +125,18 @@ def list_players_by_session(
     # Fetch players associated with the session
     players = [sp.player for sp in session.players]
 
-    # Transform players to PlayerOut models
-    player_out_list = [PlayerOut(**player.__dict__) for player in players]
+    # Depending on session type
+    if session_type == 'ranked':
+        # Transform players to PlayerOut models
+        return [PlayerOut(**player.__dict__) for player in players if player.isSession_player]
+        
+    
+    else:
+        # Transform players to PlayerOut models
+        # Assuming PlayerOut is a class that takes keyword arguments.
+        
+        return [PlayerOut(**player.__dict__) for player in players]
 
-    return player_out_list
+
 
 

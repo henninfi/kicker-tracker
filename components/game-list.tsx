@@ -19,6 +19,7 @@ import {
 import { useFiefIsAuthenticated, useFiefUserinfo } from '@fief/fief/nextjs/react'
 import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
+import { useAuthInfo } from "@propelauth/react";
 
 function GameList() {
   const { leaderboard, isLoading } = useContext(DataContext);
@@ -108,13 +109,16 @@ function GameItem({ game }: { game: Game }) {
   const [isDeletion, setIsDeletion] = useState(false);
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
   const sessionId = router.query.sessionId as string;
+  const authInfo = useAuthInfo();
 
   const handleDelete = async () => {
+    
     try {
-      const config = {
-        withCredentials: true,  // This tells axios to send cookies along with the request
+      const headers = {
+        Authorization: `Bearer ${authInfo.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
       };
-      await axios.delete(`${NEXT_PUBLIC_API}/games/${id}`, config);
+      await axios.delete(`${NEXT_PUBLIC_API}/games/${id}`, { headers });
       
       // Update the games query data
       queryClient.setQueryData<Game[]>(['games'], (oldData) => {
@@ -155,12 +159,12 @@ function GameItem({ game }: { game: Game }) {
           <div className="flex items-center mb-2">
             <Team team={winnerTeam} />
             <div className="grow"></div>
-            <p className="text-green-400">+{delta}</p>
+            <p className="text-green-700">+{delta}</p>
           </div>
           <div className="flex items-center">
             <Team team={loserTeam} isBold={false} />
             <div className="grow"></div>
-            <p className="text-red-400">-{delta}</p>
+            <p className="text-red-700">-{delta}</p>
           </div>
         </>
       )}

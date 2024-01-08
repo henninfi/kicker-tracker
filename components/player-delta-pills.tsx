@@ -57,10 +57,10 @@ export const PlayerDeltaPills = ({
             <div
               className={`ml-1 text-xs ${
                 delta > 0
-                  ? "text-green-400"
+                  ? "text-green-700"
                   : delta < 0
-                  ? "text-red-400"
-                  : "text-slate-300"
+                  ? "text-red-700"
+                  : "text-gray-300"
               }`}
             >
               {delta > 0 ? "+" : ""}

@@ -9,12 +9,14 @@ import { PlayerId } from "../domain/Player";
 import Button from "./button";
 import Card from "./card";
 import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
+import { useAuthInfo } from "@propelauth/react";
 
   import { useRouter } from 'next/router';
 
 
 function GameForm({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const authInfo = useAuthInfo();
 
   const { leaderboard } = useContext(DataContext);
   const [winnerTeam, setWinnerTeam] = useState<Team>(["", ""]);
@@ -24,12 +26,13 @@ function GameForm({ onClose }: { onClose: () => void }) {
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
 
-  const config = {
-    withCredentials: true,
+  const headers = {
+    Authorization: `Bearer ${authInfo.accessToken}`,
+    Accept: 'application/json', // Set the Accept header to JSON
   };
   // Define the mutation for posting a new game
   const postGameMutation = useMutation({
-    mutationFn: (newGameData: NewGame) => axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, newGameData, config),
+    mutationFn: (newGameData: NewGame) => axios.post(`${NEXT_PUBLIC_API}/games/${sessionId}`, newGameData, {headers}),
     onSuccess: () => {
       // Correct usage of invalidateQueries with query filters
       queryClient.invalidateQueries({ queryKey: ['games', sessionId] });
@@ -104,7 +107,7 @@ function GameForm({ onClose }: { onClose: () => void }) {
 
   return (
     <Card isActive>
-      <div className="flex justify-between px-4 items-center border-b border-slate-500">
+      <div className="flex justify-between px-4 items-center border-b border-gray-200">
         <p className="text-xl ">Winner</p>
         {delta && <p className="text-lg">Δ {delta}</p>}
         <p className="text-xl">Loser</p>
@@ -119,7 +122,7 @@ function GameForm({ onClose }: { onClose: () => void }) {
                 key={player.id}
                 textSize="text-base"
                 backgroundColor={
-                  winnerTeam.includes(player.id) ? "bg-slate-500" : undefined
+                  winnerTeam.includes(player.id) ? "bg-gray-300" : undefined
                 }
                 className="mt-1 flex items-center normal-case"
                 onClick={() => handleWinnerSelect(player.id)}
@@ -147,7 +150,7 @@ function GameForm({ onClose }: { onClose: () => void }) {
                   winnerTeam.includes(player.id)
                     ? "bg-red-400"
                     : loserTeam.includes(player.id)
-                    ? "bg-slate-500"
+                    ? "bg-gray-300"
                     : undefined
                 }
                 className="mt-1 flex justify-end items-center normal-case"
@@ -168,12 +171,12 @@ function GameForm({ onClose }: { onClose: () => void }) {
         <Button
           onClick={onClose}
           textSize="text-base"
-          backgroundColor="bg-slate-700"
+          backgroundColor="bg-gray-200 border border-gray-400"
         >
           cancel
         </Button>
         <Button
-          backgroundColor="bg-green-700"
+          backgroundColor="bg-green-500 border border-gray-400"
           textSize="text-base"
           onClick={handleSubmit}
         >

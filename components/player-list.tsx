@@ -79,19 +79,21 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
   
 
   async function handleSave() {
-    const config = {
-      withCredentials: true,
-    };
+      const headers = {
+        Authorization: `Bearer ${authInfo.accessToken}`,
+        Accept: 'application/json', // Set the Accept header to JSON
+      };
 
-    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, values, config);
+    await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, values, { headers });
     setIsNameEdit(false);
     setIsAnimalEdit(false);
     queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   async function handleRetirement() {
-    const config = {
-      withCredentials: true,
+    const headers = {
+      Authorization: `Bearer ${authInfo.accessToken}`,
+      Accept: 'application/json', // Set the Accept header to JSON
     };
     const confirmed = confirm("Are you sure you want to retire this player?");
     if (!confirmed) {
@@ -100,20 +102,21 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
     await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, {
       ...player,
       isRetired: true,
-    },config);
+    },{ headers });
     setIsNameEdit(false);
     setIsAnimalEdit(false);
     queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
   }
 
   async function handleComeback() {
-    const config = {
-      withCredentials: true,
+    const headers = {
+      Authorization: `Bearer ${authInfo.accessToken}`,
+      Accept: 'application/json', // Set the Accept header to JSON
     };
     await axios.put(`${NEXT_PUBLIC_API}/players/${player.id}`, {
       ...player,
       isRetired: false,
-    }, config);
+    }, { headers });
     setIsNameEdit(false);
     setIsAnimalEdit(false);
     queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
@@ -177,7 +180,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
         </div>
       ) : (
         <>
-          <p className="mr-2 w-4 text-slate-300 text-center">{rank || "-"}</p>
+          <p className="mr-2 w-4 text-gray-700 text-center">{rank || "-"}</p>
           {player.isTournamentWinner && authInfo.user ? (
             <div className="w-6 flex justify-center items-center flex-col relative">
               <div className="absolute text-xs -right-1 -bottom-1">🥇</div>
@@ -202,7 +205,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
             <div className="flex grow">
               <input
                 autoFocus
-                className="rounded bg-slate-700 px-1 ml-1 mr-2 w-0 grow"
+                className="rounded bg-gray-300 px-1 ml-1 mr-2 w-0 grow"
                 placeholder="Name"
                 value={values.name}
                 onChange={(e) => setValues({ ...values, name: e.target.value })}
@@ -217,7 +220,7 @@ function PlayerItem({ player, rank }: { player: RatedPlayer; rank?: number }) {
                 {player.name}
               </p>
               <div className="grow"></div>
-              <p className="text-slate-400 w-10 text-center">{player.rating}</p>
+              <p className="text-gray-700 w-10 text-center">{player.rating}</p>
             </>
           )}
         </>

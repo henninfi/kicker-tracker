@@ -9,9 +9,11 @@ import Card from "./card";
 import { useRouter } from 'next/router';
 import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
 import { NewPlayer } from "../domain/Player";
+import { useAuthInfo } from "@propelauth/react";
 
 
-export function PlayerForm({ onClose }: { onClose: () => void }) {
+export function PlayerForm({ onClose }: { onClose: () => void } ) {
+  const authInfo = useAuthInfo();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -21,26 +23,38 @@ export function PlayerForm({ onClose }: { onClose: () => void }) {
 
   const sessionId = router.query.sessionId as string;
   const NEXT_PUBLIC_API: string | undefined = process.env.NEXT_PUBLIC_API;
-  const config = {
-    withCredentials: true,
-  };
+  
+  
 
   const postPlayerMutation = useMutation({
     mutationFn: (newPlayerData: NewPlayer) => {
+      const headers = {
+        Authorization: `Bearer ${authInfo.accessToken}`,
+    };
       // Adjust the URL based on whether sessionId is provided
       const url = sessionId 
         ? `${NEXT_PUBLIC_API}/players/${sessionId}` 
         : `${NEXT_PUBLIC_API}/players`;  // Adjust this URL as needed
   
-      return axios.post(url, newPlayerData, config);
+      return axios.post(url, newPlayerData, { headers });
     },
-    onSuccess: () => {
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['players', sessionId] });
+    onSuccess: (data) => {
+      
+      // Update the currentPlayer cache with the new data
+      if (!sessionId) {
+        // Update the currentPlayer cache with the new data
+        queryClient.setQueryData(['currentPlayer'], data);
+      }
+
+    onClose();  // Close the form or navigate away
+      
+      
+      
     },
     mutationKey: ['addPlayer']
   });
-  
+
+
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -48,20 +62,19 @@ export function PlayerForm({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    const newGame: NewPlayer = {
+    const newPlayer: NewPlayer = {
       animal: animal,
       name:name
     };
 
-    postPlayerMutation.mutate(newGame);
-    onClose();
+    postPlayerMutation.mutate(newPlayer);
   }
 
 
   return (
     <Card className="flex flex-col mb-4">
       <input
-        className="rounded bg-slate-700 px-2 py-1 mb-2"
+        className="rounded bg-gray-300 px-2 py-1 mb-2 border border-gray-700"
         placeholder="Name"
         value={name}
         autoFocus
@@ -74,7 +87,7 @@ export function PlayerForm({ onClose }: { onClose: () => void }) {
             <div
               key={el}
               className={`p-1 flex flex-col items-center rounded-lg border-2 ${
-                el === animal ? "border-slate-300" : "border-transparent"
+                el === animal ? "border-gray-700" : "border-transparent"
               }`}
               onClick={() => setAnimal(el)}
             >

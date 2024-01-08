@@ -3,9 +3,9 @@ import { useRouter } from 'next/router';
 import Card from "../../components/card"; 
 import { SessionCreateData } from '../api/sessions/sessiontypes'
 import { createSession } from '../api/sessions'
-import { useAuthInfo } from "@propelauth/react";
+import { useAuthInfo,withRequiredAuthInfo } from "@propelauth/react";
 
-export default function SessionMenuPage() {
+function SessionMenuPage() {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [sessionData, setSessionData] = useState({ name: '', description: '', session_type: '' });
@@ -13,7 +13,8 @@ export default function SessionMenuPage() {
   const authInfo = useAuthInfo();
 
   const handleChoice = (choice: 'casual' | 'ranked') => {
-    const sessionType = choice === 'casual' ? 'ladder' : '1-day-pass';
+    const sessionType = choice === 'casual' ? 'casual' : 'ranked';
+    console.log('sessionType', sessionType)
     setSessionData({ ...sessionData, session_type: sessionType });
     setSelectedChoice(choice);
     setShowForm(true);
@@ -40,13 +41,13 @@ export default function SessionMenuPage() {
       <h1 className="mb-4 text-xl font-bold">Choose Session Type</h1>
       <div className="flex space-x-4">
         <Card
-          className={`text-center cursor-pointer p-12 ${selectedChoice === 'casual' ? 'bg-slate-400' : ''}`}
+          className={`text-center cursor-pointer p-12 ${selectedChoice === 'casual' ? 'bg-slate-800' : 'text-slate-300'}`}
           onClick={() => handleChoice('casual')}
         >
           Casual
         </Card>
         <Card
-          className={`text-center cursor-pointer p-12 ${selectedChoice === 'ranked' ? 'bg-slate-400' : ''}`}
+          className={`text-center cursor-pointer p-12 ${selectedChoice === 'ranked' ? 'bg-slate-800' : 'text-slate-300'}`}
           onClick={() => handleChoice('ranked')}
         >
           Ranked
@@ -60,14 +61,14 @@ export default function SessionMenuPage() {
             placeholder="Session Name"
             value={sessionData.name}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="w-full p-2 text-slate-600 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           <textarea
             name="description"
             placeholder="Description"
             value={sessionData.description}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="w-full p-2 text-slate-600 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
             rows={3}
           />
           <button 
@@ -81,3 +82,5 @@ export default function SessionMenuPage() {
     </div>
   );
 }
+
+export default withRequiredAuthInfo(SessionMenuPage)

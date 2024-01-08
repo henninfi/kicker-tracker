@@ -10,8 +10,8 @@ function Card({ children, isActive = false, className, ...props }: Props) {
     <div
       {...props}
       className={`${
-        isActive ? "bg-slate-600 hover:bg-slate-500" : "bg-slate-700 hover:bg-slate-600"
-      } rounded-2xl p-2 text-slate-100 transition-colors duration-150 ${className || ""}`}
+        isActive ? "bg-white shadow-lg border-2 hover:bg-gray-100 border-blue-600 shadow-blue-200" : "bg-white shadow-lg border-2 hover:bg-gray-100 border-blue-600 shadow-blue-200"
+      } rounded-2xl p-2 text-black transition-colors duration-150 ${className || ""}`}
       >
       {children}
     </div>

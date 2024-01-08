@@ -2,14 +2,15 @@
 
 import PlayerForm from '../../components/player-form'; // Adjust the import path as necessary
 import { useRouter } from 'next/router';
+import { withRequiredAuthInfo } from "@propelauth/react";
 
-export default function CreatePlayerPage() {
+function CreatePlayerPage() {
   const router = useRouter();
 //   const sessionId = router.query.sessionId as string;
 
   // Function to handle the closing of the player form (e.g., navigate to a different page)
   const handleClose = () => {
-    router.push(`/session_menu`); // Navigate to the session page or another page as required
+    router.push(`/my_sessions`); // Navigate to the session page or another page as required
   };
 
 
@@ -20,3 +21,5 @@ export default function CreatePlayerPage() {
     </div>
   );
 }
+
+export default withRequiredAuthInfo(CreatePlayerPage)
